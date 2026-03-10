@@ -1,10 +1,14 @@
 # Clara — Next.js (production)
-FROM node:20-alpine AS base
+# Debian slim : Prisma a besoin de glibc + OpenSSL (db:push dans le conteneur)
+FROM node:20-bookworm-slim AS base
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 FROM base AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
+COPY prisma ./prisma
 RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
@@ -28,8 +32,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/next.config.ts ./ 2>/dev/null || true
-COPY --from=builder /app/tsconfig.json ./ 2>/dev/null || true
+COPY --from=builder /app/tsconfig.json ./
 
 EXPOSE 3000 3001
 

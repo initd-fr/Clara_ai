@@ -37,7 +37,7 @@ function isValidRedirectUrl(url: string, baseUrl: string): boolean {
 // Middleware principal sécurisé
 export default withAuth(
   function middleware(req: NextRequestWithAuth) {
-    const { pathname, searchParams } = req.nextUrl;
+    const { pathname } = req.nextUrl;
 
     // === SÉCURITÉ : Validation d'origine pour les routes API ===
     if (
@@ -86,7 +86,6 @@ export default withAuth(
     const publicRoutes = [
       "/mobile",
       "/api/auth",
-      "/reset-password",
       "/api/static",
       "/api/manifest",
     ];
@@ -214,7 +213,6 @@ export default withAuth(
         const publicRoutes = [
           "/mobile",
           "/api/auth",
-          "/reset-password",
           "/api/static",
           "/api/manifest",
         ];

@@ -11,24 +11,24 @@ class Settings(BaseSettings):
     ENV: str = "development"
     DEBUG: bool = True
 
-    # API
-    API_KEY: str
-    API_URL: str
+    # API (Clara appelle Archibald avec X-API-Key = API_KEY)
+    API_KEY: str = ""
+    API_URL: str = "http://localhost:3000"
 
     # LLM API Keys
-    OPENAI_API_KEY: str
-    MISTRAL_API_KEY: str
-    ANTHROPIC_API_KEY: str
-    GEMINI_API_KEY: str
+    OPENAI_API_KEY: str = ""
+    MISTRAL_API_KEY: str = ""
+    ANTHROPIC_API_KEY: str = ""
+    GEMINI_API_KEY: str = ""
 
     # Embedding
     EMBEDDINGS_MODEL: str = "text-embedding-3-small"
 
-    # Search API Keys
-    GOOGLE_API_KEY: str
-    GOOGLE_CSE_ID: str
-    SERPER_API_KEY: str
-    TAVILY_API_KEY: str
+    # Search API Keys (optionnels : recherche web désactivée si vides)
+    GOOGLE_API_KEY: str = ""
+    GOOGLE_CSE_ID: str = ""
+    SERPER_API_KEY: str = ""
+    TAVILY_API_KEY: str = ""
 
     # PostgreSQL
     DATABASE_URL: str
@@ -84,23 +84,17 @@ class Settings(BaseSettings):
         return self.ENV.lower() == "development"
 
     def validate_api_keys(self) -> bool:
-        """Validate that all required API keys are present"""
-        required_keys = [
+        """Validate that at least one LLM key is present for le chat"""
+        llm_keys = [
             "OPENAI_API_KEY",
             "MISTRAL_API_KEY",
             "ANTHROPIC_API_KEY",
             "GEMINI_API_KEY",
-            "DATABASE_URL",
         ]
-
-        missing_keys = []
-        for key in required_keys:
-            if not getattr(self, key, None):
-                missing_keys.append(key)
-
-        if missing_keys:
-            raise ValueError(f"Missing required API keys: {missing_keys}")
-
+        if not any(getattr(self, k, None) for k in llm_keys):
+            raise ValueError(
+                "Au moins une clé LLM requise (OPENAI, MISTRAL, ANTHROPIC ou GEMINI)"
+            )
         return True
 
     class Config:

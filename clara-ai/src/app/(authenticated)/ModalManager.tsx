@@ -1,7 +1,7 @@
 "use client";
 
 ////////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
-import { useCallback, memo } from "react";
+import { memo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import SetModelModal from "./sidebar/components/SetModelModal";
 import SpeedCreateModal from "./sidebar/components/SpeedCreateModal";

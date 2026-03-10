@@ -17,16 +17,22 @@ class EmbeddingsService {
   private static instance: EmbeddingsService;
   private cache: Map<string, { embedding: number[]; timestamp: number }> =
     new Map();
-  private embeddings: OpenAIEmbeddings;
+  private embeddings: OpenAIEmbeddings | null = null;
   private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
 
-  private constructor() {
-    this.embeddings = new OpenAIEmbeddings({
-      model: process.env.EMBEDDINGS_MODEL ?? "text-embedding-3-small",
-      apiKey: process.env.OPENAI_API_KEY,
-      maxConcurrency: 5,
-      maxRetries: 3,
-    });
+  private constructor() {}
+
+  private getEmbeddings(): OpenAIEmbeddings {
+    if (!this.embeddings) {
+      if (!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY non configurée");
+      this.embeddings = new OpenAIEmbeddings({
+        model: process.env.EMBEDDINGS_MODEL ?? "text-embedding-3-small",
+        apiKey: process.env.OPENAI_API_KEY,
+        maxConcurrency: 5,
+        maxRetries: 3,
+      });
+    }
+    return this.embeddings;
   }
 
   public static getInstance(): EmbeddingsService {
@@ -61,7 +67,7 @@ class EmbeddingsService {
     }
 
     try {
-      const result = await this.embeddings.embedQuery(text);
+      const result = await this.getEmbeddings().embedQuery(text);
       if (!Array.isArray(result) || result.length === 0) {
         throw new Error("Failed to generate embedding: invalid result");
       }
@@ -88,7 +94,7 @@ class EmbeddingsService {
   ): Promise<BatchResult> {
     try {
       const client = await PgRawPool.connect();
-      const processed = await this.embeddings.embedDocuments(
+      const processed = await this.getEmbeddings().embedDocuments(
         batch.map((item) => item.text),
       );
 
@@ -157,7 +163,7 @@ class EmbeddingsService {
   ): Promise<BatchResult> {
     try {
       const client = await PgRawPool.connect();
-      const processed = await this.embeddings.embedDocuments(
+      const processed = await this.getEmbeddings().embedDocuments(
         batch.map((item) => item.pageContent),
       );
 

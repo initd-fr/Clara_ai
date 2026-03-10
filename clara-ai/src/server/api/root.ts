@@ -55,5 +55,9 @@ export const createCaller = async (headers: Headers) => {
   return createCallerFactory(appRouter)(context);
 };
 
-// Initialiser les paramètres système au démarrage
-initializeSettings().catch(console.error);
+// Initialiser les paramètres système au démarrage (pas pendant next build)
+if (process.env.NEXT_PHASE !== "phase-production-build") {
+  initializeSettings().catch(() => {
+    // Silencieux si DB indisponible (ex. build sans Postgres)
+  });
+}

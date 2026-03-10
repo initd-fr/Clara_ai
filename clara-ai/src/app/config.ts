@@ -62,7 +62,6 @@ export const APP_CONFIG = {
 
     // Routes d'authentification
     auth: "/auth",
-    resetPassword: "/reset-password",
 
     // Routes principales (authentifiées)
     home: "/home",

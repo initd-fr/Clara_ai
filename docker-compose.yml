@@ -41,6 +41,9 @@ services:
     env_file:
       - ./.env
     environment:
+      # Même clé que Archibald (obligatoire pour le chat)
+      ARCHIBALD_API_KEY: ${ARCHIBALD_API_KEY:?Renseigner ARCHIBALD_API_KEY dans le .env}
+      ARCHIBALD_API_URL: http://archibald:8000
       DATABASE_URL: postgresql://clara:clara_secret@postgres:5432/clara
       MINIO_ENDPOINT: minio
       MINIO_ACCESS_KEY: minioadmin
@@ -62,6 +65,9 @@ services:
     env_file:
       - ./.env
     environment:
+      # Même valeur que ARCHIBALD_API_KEY côté Clara (X-API-Key)
+      API_KEY: ${ARCHIBALD_API_KEY:?Renseigner ARCHIBALD_API_KEY dans le .env}
+      API_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       DATABASE_URL: postgresql://clara:clara_secret@postgres:5432/clara
       MINIO_ENDPOINT: minio
       MINIO_ACCESS_KEY: minioadmin

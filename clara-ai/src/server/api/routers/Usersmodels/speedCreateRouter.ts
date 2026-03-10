@@ -14,9 +14,12 @@ import { emitProgress } from "~/server/shared/progressBridge";
 import type { Session } from "next-auth";
 import { AccessControlService } from "~/server/services/accessControl";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let _openai: OpenAI | null = null;
+const getOpenAI = (): OpenAI => {
+  if (!process.env.OPENAI_API_KEY) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "OPENAI_API_KEY non configurée" });
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return _openai;
+};
 
 /////////////////////////////////////////////////////////////////////////////////FUNCTIONS/////////////////////////////////////////////////////////////////////////////////////////
 
@@ -228,7 +231,7 @@ Une fois la demande comprise :
         );
 
         try {
-          const completion = await openai.chat.completions.create({
+          const completion = await getOpenAI().chat.completions.create({
             model: speedCreateModel,
             messages,
             tools: [
@@ -369,7 +372,7 @@ Une fois la demande comprise :
 
                   try {
                     const finalCompletion =
-                      await openai.chat.completions.create({
+                      await getOpenAI().chat.completions.create({
                         model: speedCreateModel,
                         messages: messagesWithFunctionResult,
                       });
@@ -442,7 +445,7 @@ Une fois la demande comprise :
           ) {
             console.warn("🔄 Tentative avec gpt-4o-mini...");
             try {
-              const fallbackCompletion = await openai.chat.completions.create({
+              const fallbackCompletion = await getOpenAI().chat.completions.create({
                 model: "gpt-4o-mini",
                 messages,
                 tools: [
@@ -746,7 +749,7 @@ Une fois les analyses terminées :
         );
 
         try {
-          const completion = await openai.chat.completions.create({
+          const completion = await getOpenAI().chat.completions.create({
             model: speedCreateModel,
             messages,
             tools: [
@@ -897,7 +900,7 @@ Une fois les analyses terminées :
 
                   try {
                     const finalCompletion =
-                      await openai.chat.completions.create({
+                      await getOpenAI().chat.completions.create({
                         model: speedCreateModel,
                         messages: messagesWithFunctionResult,
                       });
@@ -974,7 +977,7 @@ Une fois les analyses terminées :
           ) {
             console.warn("🔄 Tentative avec gpt-4o-mini...");
             try {
-              const fallbackCompletion = await openai.chat.completions.create({
+              const fallbackCompletion = await getOpenAI().chat.completions.create({
                 model: "gpt-4o-mini",
                 messages,
                 tools: [

@@ -63,50 +63,6 @@ const footer = {
 ////////////////////////////////////////////////////////////////////////////////STYLES///////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////FUNCTIONS///////////////////////////////////////////////////////////////////////////////////////
-export const ForgottenPasswordTemplate: React.FC<{ tempPassword: string }> = ({
-  tempPassword,
-}) => (
-  <>
-    <h1
-      style={{
-        color: "#1d1d1f",
-        fontSize: "24px",
-        fontWeight: "600",
-        lineHeight: "40px",
-        margin: "0 0 20px",
-        textAlign: "center",
-        fontFamily: "Inter, sans-serif",
-      }}
-    >
-      Mot de passe temporaire
-    </h1>
-    <div>
-      <p>Bonjour,</p>
-      <p>
-        Nous avons reçu une demande de réinitialisation de mot de passe pour
-        votre compte. Si vous n&apos;avez pas effectué cette demande, veuillez
-        ignorer cet email.
-      </p>
-      <p>
-        Voici votre mot de passe temporaire : <strong>{tempPassword}</strong>
-      </p>
-      <p>
-        Nous vous recommandons de le changer dès que possible après vous être
-        connecté.
-      </p>
-      <p>
-        Pour réinitialiser votre mot de passe connectez vous à votre compte avec
-        votre mot de passe temporaire et rendez vous sur votre page paramètres
-      </p>
-      <p>
-        Cordialement,
-        <br />
-        L&apos;équipe de Clara AI
-      </p>
-    </div>
-  </>
-);
-
 export const AccountRequestTemplate: React.FC<
   Readonly<AccountRequestTemplateProps>
 > = ({ email, firstName, lastName }: AccountRequestTemplateProps) => (

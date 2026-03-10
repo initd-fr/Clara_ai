@@ -74,6 +74,16 @@ echo ""
 echo "📦 Application du schéma de base de données (Prisma)..."
 docker compose run --rm clara pnpm db:push || true
 
+# Créer l'utilisateur par défaut Clara (clara@clara.local / claraai)
+echo ""
+echo "👤 Création de l'utilisateur par défaut Clara..."
+docker compose run --rm clara node src/scripts/createClaraUser.js || true
+
+# Créer les 3 providers par défaut (OpenAI, Mistral, Google)
+echo ""
+echo "🔌 Création des providers par défaut (OpenAI, Mistral, Google)..."
+docker compose run --rm clara node src/scripts/seedDefaultProviders.js || true
+
 echo ""
 echo "=============================================="
 echo "  ✅ Clara AI est prête"
@@ -82,6 +92,8 @@ echo ""
 echo "  • Application (Clara)  : http://localhost:3000"
 echo "  • API Archibald        : http://localhost:8000"
 echo "  • Console MinIO        : http://localhost:9001 (minioadmin / minioadmin)"
+echo ""
+echo "  Compte par défaut : voir les variables CLARA_DEFAULT_* dans le .env"
 echo ""
 echo "  Pour arrêter la stack : docker compose down"
 echo "  Pour voir les logs     : docker compose logs -f"

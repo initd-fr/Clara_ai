@@ -146,18 +146,6 @@ const LLMForm = memo(
       [providers],
     );
 
-    const handleSubscriptionChange = useCallback(
-      (subscription: string, checked: boolean) => {
-        setFormData((prev) => ({
-          ...prev,
-          availableSubscriptions: checked
-            ? [...prev.availableSubscriptions, subscription]
-            : prev.availableSubscriptions.filter((s) => s !== subscription),
-        }));
-      },
-      [],
-    );
-
     const subscriptionOptions = useMemo(() => [], []);
 
     // Mémoisation des classes CSS pour les performances

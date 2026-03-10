@@ -14,9 +14,7 @@ import {
   Star,
   MoreVertical,
   MessageCircleOff,
-  CheckCircle,
 } from "lucide-react";
-import { api } from "~/trpc/react";
 import SecondaryLoader from "~/components/SecondaryLoader";
 import Image from "next/image";
 // ~  ///////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
@@ -1519,23 +1517,16 @@ function getContent(
                   </p>
                 </div>
 
-                {/* Mot de passe oublié */}
+                {/* Mot de passe oublié / réinitialisation */}
                 <div className="rounded-lg bg-base-300/30 p-4 sm:p-6">
                   <h5 className="mb-3 text-base font-semibold text-primary sm:text-lg">
                     J&apos;ai oublié mon mot de passe
                   </h5>
                   <p className="text-sm leading-relaxed text-base-content/70">
-                    Accédez à votre <strong>page Paramètres</strong> depuis le
-                    bouton de la sidebar.
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-base-content/70">
-                    Dans la section <strong>&quot;Sécurité&quot;</strong>, vous
-                    trouverez l&apos;option pour changer votre mot de passe.
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-base-content/70">
-                    Si vous ne pouvez plus accéder à votre compte, utilisez la
-                    fonction <strong>&quot;Mot de passe oublié&quot;</strong>{" "}
-                    sur la page de connexion.
+                    En déploiement local, la réinitialisation par email
+                    n&apos;est pas disponible. Demandez à un administrateur
+                    d&apos;exécuter le script <strong>createClaraUser</strong> pour
+                    réinitialiser ou recréer votre compte.
                   </p>
                 </div>
 
