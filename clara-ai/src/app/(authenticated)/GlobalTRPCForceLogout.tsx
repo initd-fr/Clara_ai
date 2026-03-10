@@ -1,0 +1,75 @@
+"use client";
+
+////////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
+import { useEffect, memo, useCallback, useState } from "react";
+import { signOut } from "next-auth/react";
+import { toast } from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
+////////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////TYPES///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////TYPES///////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////FUNCTIONS///////////////////////////////////////////////////////////////////////////////////////
+const GlobalTRPCForceLogout = memo(function GlobalTRPCForceLogout() {
+  const queryClient = useQueryClient();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  ////////////////////////////////////////////////////////////////////////////////HOOKS///////////////////////////////////////////////////////////////////////////////////////
+  const handleForceLogout = useCallback(async () => {
+    // Éviter les redirections multiples
+    if (isLoggingOut) {
+      console.log("🔒 Force logout déjà en cours, ignoré");
+      return;
+    }
+
+    console.log("🚨 FORCE LOGOUT DÉTECTÉ - GlobalTRPCForceLogout");
+    setIsLoggingOut(true);
+
+    try {
+      toast.error("Nouvelle session détectée, déconnexion...");
+      await signOut({ redirect: false });
+      queryClient.clear();
+      console.log("🔄 Redirection vers /auth...");
+      // Utiliser window.location.href pour une redirection plus fiable
+      window.location.href = "/auth";
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion forcée:", error);
+      // Fallback : redirection directe
+      try {
+        window.location.href = "/auth";
+      } catch (redirectError) {
+        console.error("Erreur lors de la redirection:", redirectError);
+        window.location.reload();
+      }
+    }
+  }, [queryClient, isLoggingOut]);
+
+  useEffect(() => {
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      // On vérifie que l'événement concerne une erreur sur une query
+      // @ts-expect-error - Type de l'événement TanStack Query non typé
+      const query = event?.query ?? event?.queryCacheEntry?.query;
+      if (
+        query &&
+        query.state.error &&
+        typeof query.state.error === "object" &&
+        "data" in query.state.error &&
+        query.state.error.data?.code === "UNAUTHORIZED" &&
+        query.state.error.data?.message === "FORCE_LOGOUT"
+      ) {
+        handleForceLogout();
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [queryClient, handleForceLogout]);
+  ////////////////////////////////////////////////////////////////////////////////HOOKS///////////////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////RENDER///////////////////////////////////////////////////////////////////////////////////////
+  return null;
+});
+////////////////////////////////////////////////////////////////////////////////FUNCTIONS///////////////////////////////////////////////////////////////////////////////////////
+
+export default GlobalTRPCForceLogout;

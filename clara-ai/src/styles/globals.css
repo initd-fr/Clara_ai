@@ -1,0 +1,385 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+/* Configuration de base des polices */
+body {
+  @apply font-sans;
+}
+
+html {
+  font-family: "Inter", sans-serif;
+}
+
+/* Classes personnalisées pour des titres plus fins */
+.title-thin {
+  font-weight: 300;
+  letter-spacing: -0.025em;
+}
+
+.title-light {
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.title-medium {
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+.title-semibold {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Titres avec Inter plus fin */
+h1,
+.text-3xl {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+h2,
+.text-2xl {
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+h3,
+.text-xl {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+h4,
+.text-lg {
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+/* Styles spécifiques pour corriger le logo sur la page auth */
+.auth-logo-container {
+  /* Contraintes strictes pour éviter le débordement */
+  max-width: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+.auth-logo-image {
+  /* Styles de fallback pour tous les navigateurs */
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+/* Fallback pour les navigateurs qui ne supportent pas object-fit */
+@supports not (object-fit: contain) {
+  .auth-logo-image {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+/* Correction spécifique pour Safari et WebKit */
+@supports (-webkit-appearance: none) {
+  .auth-logo-container {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+
+  .auth-logo-image {
+    -webkit-max-width: 100%;
+    -webkit-max-height: 100%;
+  }
+}
+
+/* Correction pour Firefox */
+@supports (-moz-appearance: none) {
+  .auth-logo-container {
+    -moz-box-sizing: border-box;
+  }
+}
+
+/* Correction pour Edge/IE */
+@supports (-ms-ime-align: auto) {
+  .auth-logo-container {
+    -ms-box-sizing: border-box;
+  }
+}
+
+/* Configuration pour l'impression */
+@media print {
+  .non-printable {
+    display: none;
+  }
+  .reveal .speaker-notes,
+  .reveal .slide-number,
+  .reveal .controls {
+    display: none !important;
+  }
+}
+
+@keyframes shine {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+.logo-gradient {
+  background: linear-gradient(
+    135deg,
+    #0091ff 0%,
+    #00b8ff 25%,
+    #ff00f5 50%,
+    #ff00b8 75%,
+    #0091ff 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shine 50s linear infinite;
+}
+
+.logo-gradient-wa {
+  background: linear-gradient(135deg, #0091ff 0%, #ff00f5 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-rendering: optimizeLegibility;
+}
+
+.model-title {
+  background: linear-gradient(
+    90deg,
+    /* Orientation horizontale pour correspondre au style */ #3e80f8 10%,
+    /* Bleu */ #8a4df9 50%,
+    /* Violet */ #ff4db2 100% /* Rose */
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.model-title-hero {
+  background: linear-gradient(
+    135deg,
+    #0091ff 0%,
+    #8a4df9 13%,
+    #ff00f5 26%,
+    #ff4db2 100%
+  );
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+@keyframes shine {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+/* Animation du loader */
+@keyframes loading06 {
+  0%,
+  75%,
+  100% {
+    transform: rotateY(-90deg);
+    opacity: 0;
+  }
+  25%,
+  50% {
+    transform: rotateY(0);
+    opacity: 1;
+  }
+}
+
+.loading06 span {
+  position: relative;
+  animation: loading06 4s infinite;
+}
+
+.loading06 span::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: attr(data-text);
+  color: theme("colors.base-content");
+  opacity: 0;
+  animation: loading06 4s infinite;
+}
+
+@keyframes loading06 {
+  0%,
+  75%,
+  100% {
+    transform: rotateY(-90deg);
+    opacity: 0;
+  }
+  25%,
+  50% {
+    transform: rotateY(0);
+    opacity: 1;
+  }
+}
+
+.loading06 span:nth-child(1)::after {
+  animation-delay: 0s;
+}
+.loading06 span:nth-child(2)::after {
+  animation-delay: 0.2s;
+}
+.loading06 span:nth-child(3)::after {
+  animation-delay: 0.4s;
+}
+.loading06 span:nth-child(4)::after {
+  animation-delay: 0.6s;
+}
+.loading06 span:nth-child(5)::after {
+  animation-delay: 0.8s;
+}
+.loading06 span:nth-child(6)::after {
+  animation-delay: 1s;
+}
+.loading06 span:nth-child(7)::after {
+  animation-delay: 1.2s;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --color-1: 0 100% 63%;
+    --color-2: 270 100% 63%;
+    --color-3: 210 100% 63%;
+    --color-4: 195 100% 63%;
+    --color-5: 90 100% 63%;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --color-1: 0 100% 63%;
+    --color-2: 270 100% 63%;
+    --color-3: 210 100% 63%;
+    --color-4: 195 100% 63%;
+    --color-5: 90 100% 63%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background;
+  }
+  /* Forcer la couleur des inputs pour qu'ils respectent le thème */
+  input,
+  textarea,
+  select {
+    @apply text-base-content;
+  }
+}
+
+/* Forcer les toasts à être au-dessus de tout */
+#react-hot-toast {
+  z-index: 9999999 !important;
+}
+
+#react-hot-toast > div {
+  z-index: 9999999 !important;
+}
+
+/* Animation pour Infinite Moving Cards - Marquee continu */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+[data-theme="dark"] .banner-light {
+  display: none;
+}
+
+[data-theme="dark"] .banner-dark {
+  display: block;
+}
+
+[data-theme="light"] .banner-light {
+  display: block;
+}
+
+[data-theme="light"] .banner-dark {
+  display: none;
+}

@@ -1,0 +1,467 @@
+// ⚠️ IMPORTANT : Pour la création d'une nouvelle base de données PostgreSQL
+// 🔧 Il est nécessaire d'activer l'extension vector avant d'utiliser la base de données
+// 💻 Pour cela, sélectionner la base de données et exécuter la commande suivante :
+// 📝 CREATE EXTENSION IF NOT EXISTS vector;
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model SettingsCategory {
+    id       Int       @id @default(autoincrement())
+    name     String    @default("")
+    Settings Setting[]
+}
+
+model Setting {
+    key              String            @id @unique
+    value            String
+    isNumber         Boolean           @default(false)
+    toolType         String            @default("")
+    categoryRelation SettingsCategory? @relation(fields: [categoryId], references: [id])
+    categoryId       Int?
+}
+
+model MessageDocument {
+    id        Int     @id @default(autoincrement())
+    title     String
+    content   String  @db.Text
+    url       String?
+    message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+    messageId Int     @unique
+}
+
+model User {
+    id                     String             @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    isPaid                 Boolean            @default(false)
+    dataConsent            Boolean            @default(false)
+    accountType            String
+    sessionToken           String?
+    previousToken          String?
+    resetPasswordToken     String?
+    resetPasswordTokenDate DateTime?
+    currentDailyMessages   Int                @default(0) // Compteur actuel des messages journaliers
+    firstName              String
+    lastName               String
+    userImage              String?
+    email                  String             @unique
+    newEmail               String?
+    newEmailToken          String?
+    newEmailTokenDate      DateTime?
+    password               String
+    role                   Role               @default(user)
+    lastReset              DateTime?
+    lastConnection         DateTime?          @default(now()) // Dernière connexion de l'utilisateur
+    isOnline               Boolean            @default(false) // État de connexion actuel
+    models                 Models[] // Relation inversée
+    messages               Message[] // Relation inversée
+    account                Account[] // Relation inversée
+    UserLogs               UserLogs[]
+    passwordLastChanged    DateTime? // Date du dernier changement de mot de passe
+    storeAccess            StoreAccess[] // Accès aux modèles store
+    tickets                Ticket[] // Tickets créés par l'utilisateur
+    assignedTickets        Ticket[]           @relation("AssignedTickets") // Tickets assignés à l'utilisateur (pour support/admin)
+    staffActions           TicketTracing[]    @relation("StaffActions") // Actions du staff sur les tickets
+    userSubscriptions      UserSubscription[] // Nouveaux abonnements utilisateur
+    StoreChat              StoreChat[]
+    StoreChatMessage       StoreChatMessage[]
+}
+
+model UserLogs {
+    id     Int    @id @default(autoincrement())
+    userId String @db.Uuid
+
+    action      String
+    modelType   String?
+    modelId     Int?
+    date        DateTime?
+    description String?
+    firstName   String
+    lastName    String
+    email       String
+    createdAt   DateTime  @default(now())
+    user        User      @relation(fields: [userId], references: [id])
+
+    @@index([userId])
+    @@index([createdAt])
+    @@index([email])
+}
+
+model Account {
+    id                String  @id @default(cuid())
+    userId            String  @db.Uuid
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String?
+    access_token      String?
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String?
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+}
+
+model iaLlm {
+    id                     Int        @id @default(autoincrement())
+    value                  String     @unique
+    label                  String
+    text                   String
+    className              String     @default("")
+    provider               String
+    providerRelation       iaProvider @relation(fields: [provider], references: [value])
+    useOnlyHumanMessage    Boolean    @default(false)
+    enabled                Boolean    @default(true)
+    isDefault              Boolean    @default(false) // Un seul LLM peut être par défaut
+    maxInputTokens         Int        @default(1)
+    maxOutputTokens        Int        @default(1)
+    description            String     @default("")
+    availableSubscriptions Json       @default("[]") // Contiendra ["uuid1", "uuid2", "uuid3"]
+    models                 Models[] // Relation inversée
+
+    // Relations many-to-many avec les configurations d'abonnements
+    subscriptionConfigs SubscriptionConfigLLM[]
+}
+
+model iaProvider {
+    id        Int      @id @default(autoincrement())
+    value     String   @unique
+    label     String
+    text      String
+    className String   @default("")
+    enabled   Boolean  @default(true)
+    llms      iaLlm[] // Relation inversée
+    models    Models[] // Relation inversée
+}
+
+model Models {
+    id                Int           @id @default(autoincrement())
+    name              String
+    prompt            String
+    isAnExpert        Boolean       @default(false)
+    isTemplate        Boolean       @default(false) // Pour identifier les modèles store
+    modelName         String
+    modelNameRelation iaLlm         @relation(fields: [modelName], references: [value])
+    provider          String        @default("openai")
+    providerRelation  iaProvider    @relation(fields: [provider], references: [value])
+    bucketName        String?
+    userId            String?       @db.Uuid // Nullable pour les modèles store
+    userIdRelation    User?         @relation(fields: [userId], references: [id])
+    createdAt         DateTime      @default(now())
+    updatedAt         DateTime      @updatedAt
+    messages          Message[] // Relation inversée
+    documents         Document[] // Relation inversée
+    storeAccess       StoreAccess[] // Accès des utilisateurs à ce modèle store
+    storeModel        StoreModel? // Nouveau lien vers StoreModel
+    includedInSubscriptions SubscriptionIncludedModels[] // Abonnements qui incluent ce modèle
+}
+
+model StoreAccess {
+    id         Int       @id @default(autoincrement())
+    userId     String    @db.Uuid
+    modelId    Int // Lien vers le modèle store (Models.id)
+    accessType String // "purchased", "trial", "staff"
+    expiresAt  DateTime? // Date d'expiration pour les accès temporaires
+    createdAt  DateTime  @default(now())
+
+    user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    model Models @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, modelId])
+    @@index([userId])
+    @@index([modelId])
+}
+
+model Document {
+    id              Int                          @id @default(autoincrement())
+    name            String
+    text            String                       @db.Text
+    embedding       Unsupported("VECTOR(1536)")?
+    minioPath       String
+    mimeType        String
+    size            Int
+    segmentOrder    Int
+    pageNumber      Int
+    createdAt       DateTime                     @default(now())
+    updatedAt       DateTime                     @updatedAt
+    modelId         Int?
+    modelIdRelation Models?                      @relation(fields: [modelId], references: [id], onDelete: Cascade)
+}
+
+model EmbeddingCache {
+    id        Int      @id @default(autoincrement())
+    textHash  String   @unique @map("text_hash")
+    embedding Unsupported("vector(1536)")
+    createdAt DateTime @default(now()) @map("created_at")
+    
+    @@map("embedding_cache")
+    @@index([textHash])
+    @@index([createdAt])
+}
+
+model Message {
+    id              Int              @id @default(autoincrement())
+    content         String           @db.Text
+    isBot           Boolean          @default(false)
+    createdAt       DateTime         @default(now())
+    document        MessageDocument?
+    userId          String           @db.Uuid
+    userIdRelation  User             @relation(fields: [userId], references: [id])
+    modelId         Int?
+    modelIdRelation Models?          @relation(fields: [modelId], references: [id])
+
+    // Relation pour le suivi des tickets (optionnel)
+    ticketTracings TicketTracing[]
+}
+
+
+
+
+// Configurations d'abonnements
+model SubscriptionConfig {
+    id          Int      @id @default(autoincrement())
+    name        String // "Essentiel", "Juridique Basic", "Médical Premium"
+    description String?
+
+    // Type d'abonnement (supprimé pour permettre des abonnements vraiment dynamiques)
+    // Les permissions déterminent le comportement au lieu d'un type prédéfini
+
+    // Limites
+    dailyMessageLimit Int? // null = illimité
+    storageLimitGB    Int? // null = illimité
+    maxPersonalModels Int? // null = illimité
+
+    // Permissions
+    canCreatePersonalModels Boolean @default(true)
+    canAccessStoreModels    Boolean @default(false) // true pour thématiques
+    canAccessTeamFeatures   Boolean @default(false) // true pour équipe
+
+    // Fonctionnalités
+    features Json @default("[]") // ["web_search", "file_upload"]
+
+    // Configuration par défaut
+    isDefault Boolean @default(false) // Un seul abonnement peut être par défaut
+
+    isActive  Boolean  @default(true)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    availableLLMs     SubscriptionConfigLLM[] // Many-to-many avec les LLMs
+    includedModels    SubscriptionIncludedModels[] // Modèles store inclus dans l'abonnement
+    userSubscriptions UserSubscription[]
+}
+
+// Liaison LLMs ↔ Configurations d'abonnements (many-to-many)
+model SubscriptionConfigLLM {
+    id              Int      @id @default(autoincrement())
+    configId        Int
+    llmId           Int
+    maxOutputTokens Int?     // Limite de tokens de sortie pour ce LLM dans cet abonnement (null = illimité)
+    createdAt       DateTime @default(now())
+
+    config SubscriptionConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+    llm    iaLlm              @relation(fields: [llmId], references: [id], onDelete: Cascade)
+
+    @@unique([configId, llmId])
+    @@index([configId])
+    @@index([llmId])
+}
+
+// Liaison Abonnements ↔ Modèles Store inclus (many-to-many)
+model SubscriptionIncludedModels {
+    id        Int      @id @default(autoincrement())
+    configId  Int
+    modelId   Int // Lien vers le modèle store (Models.id)
+    createdAt DateTime @default(now())
+
+    config SubscriptionConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+    model  Models             @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+    @@unique([configId, modelId])
+    @@index([configId])
+    @@index([modelId])
+}
+
+// Catégories pour les modèles store
+model StoreCategory {
+    id          Int         @id @default(autoincrement())
+    name        String      @unique // Nom unique de la catégorie
+    isActive    Boolean     @default(true)
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+
+    // Relation vers les modèles store
+    storeModels StoreModel[]
+
+    @@index([name])
+}
+
+// Modèles store
+model StoreModel {
+    id          Int      @id @default(autoincrement())
+    name        String
+    description String?
+    price       Float    // Prix de l'add-on en euros
+    isActive    Boolean  @default(true)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    
+    // Informations techniques et professionnelles
+    trainingData String? // Informations sur les données d'entraînement
+    version      String? // Version du modèle
+    lastUpdated  DateTime? // Date de dernière mise à jour du modèle (différent de updatedAt qui concerne la fiche)
+
+    // Lien vers le modèle existant
+    modelId Int    @unique
+    model   Models @relation(fields: [modelId], references: [id])
+
+    // Lien vers la catégorie
+    categoryId Int?
+    category   StoreCategory? @relation(fields: [categoryId], references: [id])
+
+    // Relation vers les chats store
+    storeChats StoreChat[]
+
+    @@index([categoryId])
+}
+
+// Abonnements utilisateur (un seul actif par utilisateur)
+model UserSubscription {
+    id                   Int       @id @default(autoincrement())
+    userId               String    @db.Uuid
+    configId             Int
+    status               String // "active", "canceled", "past_due"
+    expiresAt            DateTime?
+    createdAt            DateTime  @default(now())
+    updatedAt            DateTime  @updatedAt
+
+    user   User               @relation(fields: [userId], references: [id])
+    config SubscriptionConfig @relation(fields: [configId], references: [id])
+
+    @@unique([userId]) // Un seul abonnement actif par utilisateur
+    @@index([userId])
+    @@index([configId])
+}
+
+model News {
+    id          Int       @id @default(autoincrement())
+    title       String // Titre de l'actualité
+    badge       NewsBadge // Badge de l'actualité
+    content     String // Version courte pour le carrousel
+    priority    Int       @default(0) // Pour l'ordre d'affichage
+    publishDate DateTime // Date de publication prévue
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+}
+
+model Ticket {
+    id               Int          @id @default(autoincrement())
+    title            String // Titre du ticket
+    description      String       @db.Text // Description du problème
+    page             String // Page concernée
+    status           TicketStatus @default(OPEN) // Statut du ticket
+    userId           String       @db.Uuid // ID de l'utilisateur qui a créé le ticket
+    user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    assignedTo       String?      @db.Uuid // ID de l'utilisateur assigné au ticket (support/admin)
+    assignedUser     User?        @relation("AssignedTickets", fields: [assignedTo], references: [id])
+    createdAt        DateTime     @default(now())
+    updatedAt        DateTime     @updatedAt
+    resolvedAt       DateTime? // Date de résolution du ticket
+    resolutionReason String?      @db.Text // Raison de la résolution (envoyée par email au user)
+
+    // Relations pour le suivi interne
+    ticketTracings TicketTracing[]
+
+    @@index([userId])
+    @@index([status])
+    @@index([createdAt])
+}
+
+model TicketTracing {
+    id          Int      @id @default(autoincrement())
+    ticketId    Int
+    ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+    action      String // Action effectuée (ex: "Résolu", "Demande complément info", "Remonté au dev")
+    description String   @db.Text // Description détaillée de l'action (interne)
+    staffId     String   @db.Uuid // ID du staff qui a effectué l'action
+    staff       User     @relation("StaffActions", fields: [staffId], references: [id])
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    Message     Message? @relation(fields: [messageId], references: [id])
+    messageId   Int?
+
+    @@index([ticketId])
+    @@index([staffId])
+    @@index([createdAt])
+}
+
+enum NewsBadge {
+    FEATURE // Nouvelle fonctionnalité
+    UPDATE // Mise à jour
+    MODEL // Nouveau modèle
+    MAINTENANCE // Maintenance prévue
+    PROMOTION // Offre spéciale
+    GENERAL // Actualité générale
+}
+
+enum TicketStatus {
+    OPEN // Ticket ouvert
+    IN_PROGRESS // En cours de traitement
+    WAITING_FOR_USER // En attente de réponse utilisateur
+    RESOLVED // Résolu
+}
+
+enum Role {
+    user
+    companyManager
+    support
+    admin
+}
+
+// Chats store (plusieurs chats par modèle store)
+model StoreChat {
+    id           Int      @id @default(autoincrement())
+    name         String // Nom du chat (ex: "Affaire Dupont", "Contrat Martin")
+    userId       String   @db.Uuid
+    storeModelId Int
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    // Relations
+    user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    storeModel StoreModel @relation(fields: [storeModelId], references: [id], onDelete: Cascade)
+
+    // Messages du chat
+    messages StoreChatMessage[]
+
+    @@index([userId])
+    @@index([storeModelId])
+    @@index([createdAt])
+}
+
+// Messages des chats store
+model StoreChatMessage {
+    id          Int      @id @default(autoincrement())
+    content     String   @db.Text
+    isBot       Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    storeChatId Int
+    userId      String   @db.Uuid
+
+    // Relations
+    storeChat StoreChat @relation(fields: [storeChatId], references: [id], onDelete: Cascade)
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([storeChatId])
+    @@index([userId])
+    @@index([createdAt])
+}

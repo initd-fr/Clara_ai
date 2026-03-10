@@ -1,0 +1,11 @@
+# Clara AI — Workspace uv (un seul .venv à la racine pour Archibald)
+# À la racine : uv sync puis uv run --directory archibald uvicorn app.main:app --reload
+
+[project]
+name = "clara-ai-root"
+version = "0.1.0"
+description = "Root workspace for Clara AI (Archibald runs from archibald/)"
+requires-python = ">=3.12"
+
+[tool.uv.workspace]
+members = ["archibald"]

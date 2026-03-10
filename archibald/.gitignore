@@ -1,0 +1,95 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environnement virtuel
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+log/
+
+# Tests & outils
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.tox/
+.coverage.*
+coverage.xml
+*.cover
+
+# Documentation
+docs/_build/
+site/
+
+# Fichiers temporaires
+*.tmp
+*.bak
+*.swp
+*~
+
+# Fichiers de données
+*.csv
+*.xls
+*.xlsx
+*.pdf
+*.doc
+*.docx
+uploads/
+downloads/
+
+# MinIO
+minio_data/
+
+# Base de données
+*.sqlite3
+*.db
+
+# Autres
+.DS_Store
+Thumbs.db
+
+# Prisma templates
+app/db/generator/templates/
+app/db/generator/templates/**/*.jinja 
+
+#node
+node_modules/
+
+#pnpm
+pnpm-lock.yaml
+
+#env
+.env
+.env.PROD

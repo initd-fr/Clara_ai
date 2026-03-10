@@ -1,0 +1,56 @@
+// ! ///////////////////////////////////////////////////////////////////////////////MODELS TYPES///////////////////////////////////////////////////////////////////////////////////
+
+// ? ///////////////////////////////////////////////////////////////////////////////API TYPES////////////////////////////////////////////////////////////////////////////////////
+/**
+ * Type complet d'un modèle tel que retourné par l'API
+ * Utilisé principalement côté back-end et dans les requêtes API
+ */
+export type Model = {
+  id: number;
+  name: string;
+  description?: string | null;
+  prompt: string;
+  modelName: string;
+  provider: string;
+  bucketName: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// & ///////////////////////////////////////////////////////////////////////////////UI TYPES////////////////////////////////////////////////////////////////////////////////////
+/**
+ * Version simplifiée du type Model pour l'affichage dans les listes
+ * Utilisé dans les composants UI comme ModelsList
+ */
+export type ModelListItem = {
+  id: number;
+  name: string;
+  description?: string | null;
+};
+
+// ^ ///////////////////////////////////////////////////////////////////////////////STATE TYPES//////////////////////////////////////////////////////////////////////////////////
+/**
+ * Type pour le state de sélection d'un modèle
+ * Utilisé dans les composants qui gèrent la sélection de modèles
+ */
+export type ModelSelection = {
+  selectedId: number | null;
+  isLoading: boolean;
+};
+
+// * ///////////////////////////////////////////////////////////////////////////////PROPS TYPES//////////////////////////////////////////////////////////////////////////////////
+/**
+ * Props pour les composants liés aux modèles
+ */
+export type ModelListProps = {
+  initialModels: Model[];
+  onSelect?: (model: ModelListItem) => void;
+  selectedId?: number;
+};
+
+export type ModelCardProps = {
+  model: ModelListItem;
+  isSelected?: boolean;
+  onClick?: () => void;
+};

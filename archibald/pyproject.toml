@@ -1,0 +1,65 @@
+[project]
+name = "archibald"
+version = "0.1.0"
+description = "Archibald Engine v1 – API moteur IA (LLM, RAG, embeddings, recherche web)"
+authors = [
+    {name = "Archibald Engine Team"}
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.116.0",
+    "uvicorn>=0.35.0",
+    "python-dotenv>=1.0.0",
+    "psutil>=6.1.0",
+    "prisma>=0.14.0",
+    "httpx>=0.28.0",
+    "pydantic>=2.11.0",
+    "pydantic-settings>=2.10.0",
+    "anthropic>=0.58.0",
+    "openai>=1.97.0",
+    "google-generativeai>=0.8.0",
+    "mistralai>=0.4.0",
+    "asyncpg>=0.30.0",
+    "psycopg2-binary>=2.9.0",
+    "SQLAlchemy>=2.0.0",
+    "langchain>=0.3.27",
+    "langchain-core>=0.3.76",
+    "langchain-openai>=0.3.33",
+    "langchain-postgres>=0.0.15",
+    "langchain-text-splitters>=0.3.11",
+    "pillow>=11.3.0",
+    "minio>=7.2.0",
+    "tavily-python>=0.7.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.12.0",
+    "mypy>=1.7.0",
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py38"
+line-length = 88
+select = ["E", "F", "I", "N", "W", "B", "C4", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto" 
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

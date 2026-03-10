@@ -1,0 +1,14 @@
+{
+	"name": "archibald-engine",
+	"version": "1.0.0",
+	"scripts": {
+		"dev": "uvicorn app.main:app --reload",
+		"start": "uvicorn app.main:app"
+	},
+	"devDependencies": {
+		"prisma": "5.17.0"
+	},
+	"dependencies": {
+		"@prisma/client": "5.17.0"
+	}
+}

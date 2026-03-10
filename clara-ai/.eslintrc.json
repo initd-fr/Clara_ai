@@ -1,0 +1,24 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "jsx-a11y/alt-text": "off",
+    "@next/next/no-img-element": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "^_" }
+    ],
+    "react-hooks/exhaustive-deps": "warn",
+    "@typescript-eslint/ban-types": "warn",
+    "react/display-name": "warn",
+    "react/no-unescaped-entities": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["src/lib/utils/clx/**/*"],
+      "rules": {
+        "@typescript-eslint/ban-types": "off"
+      }
+    }
+  ]
+}

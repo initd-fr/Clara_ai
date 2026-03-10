@@ -1,0 +1,29 @@
+# Fichier d'environnement commun (ne pas commiter)
+.env
+.env.*
+!.env.exemple
+
+# Un seul .venv à la racine (Python / uv)
+.venv
+archibald/.venv
+
+# Clara (Next.js)
+clara-ai/node_modules
+clara-ai/.next
+clara-ai/out
+clara-ai/.pnpm-store
+*.tsbuildinfo
+clara-ai/next-env.d.ts
+
+# Archibald (Python)
+__pycache__
+*.py[cod]
+.ruff_cache
+.pytest_cache
+.mypy_cache
+
+# IDE / OS
+.DS_Store
+.vscode
+.idea
+*.session.sql
