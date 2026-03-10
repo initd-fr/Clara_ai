@@ -68,7 +68,7 @@ _Sous Windows (sans WSL) : copier `.env.exemple` en `.env`, puis `docker compose
 
 | Composant      | Rôle                                                                                                                       |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Clara**      | SPA + API (Next.js 14, tRPC, Prisma, NextAuth, MinIO). Chat, auth, modèles personnels, support (tickets), cron, WebSocket. |
+| **Clara**      | SPA + API (Next.js 14, tRPC, Prisma, NextAuth, MinIO). Chat, auth, modèles personnels, , cron, |
 | **Archibald**  | API REST (FastAPI) : routes chat par provider/mode, RAG, documents, recherche web. Authentification par `X-API-Key`.       |
 | **PostgreSQL** | Données Clara (Prisma), partagé avec Archibald pour le RAG. Extension **pgvector** requise pour les embeddings.            |
 | **MinIO**      | Stockage S3-compatible (fichiers uploadés, documents).                                                                     |
