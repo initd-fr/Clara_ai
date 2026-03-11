@@ -39,42 +39,17 @@ export const userRouter = createTRPCRouter({
       // Hash du mot de passe
       const hashedPassword = await hash(password, 12);
 
-      // Créer l'utilisateur
+      // Créer l'utilisateur (app locale : pas de config / abonnement)
       const newUser = await db.user.create({
         data: {
           email,
           password: hashedPassword,
           firstName,
           lastName,
-          accountType,
+          accountType: accountType ?? "user",
           role: "user",
         },
       });
-
-      // Récupérer l'abonnement par défaut
-      const defaultSubConfig = await db.subscriptionConfig.findFirst({
-        where: { isDefault: true },
-      });
-
-      // Assigner l'abonnement par défaut si disponible
-      if (defaultSubConfig) {
-        await db.userSubscription.create({
-          data: {
-            userId: newUser.id,
-            configId: defaultSubConfig.id,
-            status: "active",
-            expiresAt: null, // Pas de date d'expiration pour l'abonnement par défaut
-          },
-        });
-
-        // Mettre à jour l'utilisateur avec le nom de l'abonnement
-        await db.user.update({
-          where: { id: newUser.id },
-          data: {
-            accountType: defaultSubConfig.name,
-          },
-        });
-      }
 
       // Créer le log d'inscription
       await db.userLogs.create({
@@ -326,7 +301,7 @@ export const userRouter = createTRPCRouter({
     return user.currentDailyMessages ?? 0;
   }),
 
-  // Version locale : réponse statique sans abonnements (tout autorisé, pas de store)
+  // Version locale : réponse statique (tout autorisé)
   getSubscriptionInfo: protectedProcedure.query(async () => {
     return {
       hasSubscription: true,
@@ -357,7 +332,6 @@ export const userRouter = createTRPCRouter({
         const userToDelete = await db.user.findUnique({
           where: { id: userId },
           include: {
-            userSubscriptions: true,
             storeAccess: true,
             models: {
               include: {
@@ -391,7 +365,6 @@ export const userRouter = createTRPCRouter({
           `✅ [DELETE_OWN_ACCOUNT] Utilisateur trouvé: ${userToDelete.email} (${userToDelete.role})`,
         );
         console.log(`📊 [DELETE_OWN_ACCOUNT] Données à supprimer:`, {
-          userSubscriptions: userToDelete.userSubscriptions.length,
           storeAccess: userToDelete.storeAccess.length,
           models: userToDelete.models.length,
           messages: userToDelete.messages.length,
@@ -422,9 +395,9 @@ export const userRouter = createTRPCRouter({
             where: { userId: userId },
           });
 
-          // Supprimer les abonnements utilisateur
+          // Supprimer les configs utilisateur
           console.log(
-            `📋 [DELETE_OWN_ACCOUNT] Suppression des abonnements utilisateur`,
+            `📋 [DELETE_OWN_ACCOUNT] Suppression des configs utilisateur`,
           );
           await tx.userSubscription.deleteMany({
             where: { userId: userId },

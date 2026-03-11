@@ -49,7 +49,7 @@ export function SystemSettingsSection() {
   if (error) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <div className="relative overflow-hidden rounded-2xl border border-base-300/50 bg-gradient-to-br from-base-100/80 to-base-200/50 p-8 shadow-lg backdrop-blur-sm">
+        <div className="relative overflow-hidden rounded-2xl border border-base-300/50 bg-gradient-to-br from-base-100/80 to-base-200/50 p-8 shadow-lg">
           {/* Élément décoratif */}
           <div className="absolute -right-2 -top-2 h-16 w-16 rounded-full bg-gradient-to-br from-error/20 to-red-500/20 opacity-50 blur-xl" />
 
@@ -88,7 +88,7 @@ export function SystemSettingsSection() {
   if (!groupedSettings) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <div className="relative overflow-hidden rounded-2xl border border-base-300/50 bg-gradient-to-br from-base-100/80 to-base-200/50 p-8 shadow-lg backdrop-blur-sm">
+        <div className="relative overflow-hidden rounded-2xl border border-base-300/50 bg-gradient-to-br from-base-100/80 to-base-200/50 p-8 shadow-lg">
           {/* Élément décoratif */}
           <div className="absolute -right-2 -top-2 h-16 w-16 rounded-full bg-gradient-to-br from-warning/20 to-yellow-500/20 opacity-50 blur-xl" />
 

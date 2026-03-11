@@ -265,7 +265,7 @@ export const openaiRouter = createTRPCRouter({
 
         // Paralléliser les requêtes DB pour optimiser les performances
         const dbStart = Date.now();
-        const [systemPrompt, { lastExchanges }, user, subscriptionInfo] =
+        const [systemPrompt, { lastExchanges }, user] =
           await Promise.all([
             // Récupération du prompt système
             isAnExpert
@@ -291,27 +291,6 @@ export const openaiRouter = createTRPCRouter({
                 firstName: true,
                 lastName: true,
                 accountType: true,
-              },
-            }),
-
-            // Récupérer la limite de tokens pour ce LLM spécifique et cet abonnement
-            db.userSubscription.findUnique({
-              where: { userId },
-              include: {
-                config: {
-                  select: {
-                    availableLLMs: {
-                      where: {
-                        llm: {
-                          value: model.modelName,
-                        },
-                      },
-                      select: {
-                        maxOutputTokens: true,
-                      },
-                    },
-                  },
-                },
               },
             }),
           ]);
@@ -406,17 +385,10 @@ export const openaiRouter = createTRPCRouter({
                     image: image,
                     url: detectedUrl,
                     maxInputTokens: model.modelNameRelation.maxInputTokens,
-                    maxOutputTokens: (() => {
-                      const raw =
-                        subscriptionInfo?.config?.availableLLMs?.[0]
-                          ?.maxOutputTokens !== null
-                          ? (subscriptionInfo?.config?.availableLLMs?.[0]
-                              ?.maxOutputTokens ??
-                            model.modelNameRelation.maxOutputTokens)
-                          : model.modelNameRelation.maxOutputTokens;
-                      const archibaldMax = 100_000;
-                      return Math.min(raw, archibaldMax);
-                    })(),
+                    maxOutputTokens: Math.min(
+                      model.modelNameRelation.maxOutputTokens,
+                      100_000,
+                    ),
                     promptVariables,
                     userAccountType: user?.accountType || "",
                   },

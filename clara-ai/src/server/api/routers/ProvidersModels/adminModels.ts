@@ -22,7 +22,6 @@ const createLlmSchema = z.object({
   description: z.string().optional(),
   enabled: z.boolean().default(true),
   isDefault: z.boolean().default(false),
-  availableSubscriptions: z.array(z.string()).optional(),
 });
 
 const updateLlmSchema = z.object({
@@ -32,7 +31,6 @@ const updateLlmSchema = z.object({
   description: z.string().optional(),
   enabled: z.boolean(),
   isDefault: z.boolean(),
-  availableSubscriptions: z.array(z.string()).optional(),
 });
 
 const toggleEnableSchema = z.object({
@@ -96,38 +94,12 @@ export const adminModelsRouter = createTRPCRouter({
           });
         }
 
-        // Créer le nouveau LLM
         const newLLM = await tx.iaLlm.create({
           data: input,
           include: {
             providerRelation: true,
           },
         });
-
-        // Synchroniser avec SubscriptionConfigLLM si des abonnements sont spécifiés
-        if (
-          input.availableSubscriptions &&
-          input.availableSubscriptions.length > 0
-        ) {
-          const subscriptionConfigs = await tx.subscriptionConfig.findMany({
-            where: {
-              id: {
-                in: input.availableSubscriptions.map((id) => parseInt(id)),
-              },
-            },
-          });
-
-          // Créer les entrées dans SubscriptionConfigLLM
-          await tx.subscriptionConfigLLM.createMany({
-            data: subscriptionConfigs.map((config) => ({
-              configId: config.id,
-              llmId: newLLM.id,
-              maxOutputTokens: null, // Par défaut, pas de limite
-            })),
-            skipDuplicates: true,
-          });
-        }
-
         return newLLM;
       });
     }),
@@ -184,35 +156,6 @@ export const adminModelsRouter = createTRPCRouter({
               ...data,
             },
           });
-
-          // Synchroniser avec SubscriptionConfigLLM si des abonnements sont spécifiés
-          if (data.availableSubscriptions !== undefined) {
-            // Supprimer toutes les associations existantes
-            await tx.subscriptionConfigLLM.deleteMany({
-              where: { llmId: id },
-            });
-
-            // Créer les nouvelles associations si des abonnements sont spécifiés
-            if (data.availableSubscriptions.length > 0) {
-              const subscriptionConfigs = await tx.subscriptionConfig.findMany({
-                where: {
-                  id: {
-                    in: data.availableSubscriptions.map((id) => parseInt(id)),
-                  },
-                },
-              });
-
-              // Créer les entrées dans SubscriptionConfigLLM
-              await tx.subscriptionConfigLLM.createMany({
-                data: subscriptionConfigs.map((config) => ({
-                  configId: config.id,
-                  llmId: id,
-                  maxOutputTokens: null, // Par défaut, pas de limite
-                })),
-                skipDuplicates: true,
-              });
-            }
-          }
 
           return updatedLLM;
         });
@@ -302,11 +245,6 @@ export const adminModelsRouter = createTRPCRouter({
             `✅ ${llm.models.length} modèle(s) migré(s) vers le LLM par défaut: ${defaultLlm.label}`,
           );
         }
-
-        // Supprimer d'abord les relations many-to-many avec les configurations d'abonnements
-        await tx.subscriptionConfigLLM.deleteMany({
-          where: { llmId: input.id },
-        });
 
         // Puis supprimer le LLM
         return await tx.iaLlm.delete({

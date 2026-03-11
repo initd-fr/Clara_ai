@@ -217,25 +217,7 @@ export async function createAnExpert(
     done: false,
   });
 
-  const canCreatePersonalModels =
-    await AccessControlService.canCreatePersonalModels(userId);
-  if (!canCreatePersonalModels) {
-    emitProgress({
-      userId,
-      taskId,
-      type: "create",
-      step: "Erreur: Permissions insuffisantes",
-      progress: 0,
-      done: false,
-      error: "Votre abonnement ne permet pas de créer des modèles personnels",
-    });
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message:
-        "Votre abonnement ne permet pas de créer des modèles personnels.",
-    });
-  }
-
+  // App locale : pas de vérification de config, tout le monde peut créer
   emitProgress({
     userId,
     taskId,

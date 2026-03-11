@@ -1,7 +1,6 @@
 //TODO Controller pour les modèles LLM disponibles pour chaque accountType
 // ~ ///////////////////////////////////////////////////////////////////////////////IMPORTS//////////////////////////////////////////////////////////////////////////////////////
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { Prisma } from "@prisma/client";
 // ~ ///////////////////////////////////////////////////////////////////////////////IMPORTS//////////////////////////////////////////////////////////////////////////////////////
 
 // ? ///////////////////////////////////////////////////////////////////////////////TYPES///////////////////////////////////////////////////////////////////////////////////////
@@ -16,7 +15,6 @@ type IaLlm = {
   maxInputTokens: number;
   maxOutputTokens: number;
   description: string;
-  availableSubscriptions: Prisma.JsonValue;
   providerRelation: {
     value: string;
     label: string;
@@ -44,7 +42,6 @@ type FormattedModel = {
   llmMaxInputTokens: number;
   llmMaxOutputTokens: number;
   llmDescription: string;
-  availableSubscriptions: string[];
 };
 
 type ProviderModels = ProviderInfo & {
@@ -68,9 +65,6 @@ const formatModel = (model: IaLlm): FormattedModel => ({
   llmMaxInputTokens: model.maxInputTokens,
   llmMaxOutputTokens: model.maxOutputTokens,
   llmDescription: model.description,
-  availableSubscriptions: Array.isArray(model.availableSubscriptions)
-    ? (model.availableSubscriptions as string[])
-    : [],
 });
 
 const formatProvider = (model: IaLlm): ProviderInfo => ({
@@ -96,78 +90,6 @@ const formatModels = (models: IaLlm[]): ModelsByProvider => {
   }, {});
 };
 
-const filterModelsByUser = async (
-  models: ModelsByProvider,
-  userRole: string,
-  userAccountType: string,
-  userId: string,
-  db: any,
-): Promise<ModelsByProvider> => {
-  // Si c'est un admin/support, accès à tout
-  if (userRole === "support" || userRole === "admin") {
-    return models;
-  }
-
-  // Récupérer l'abonnement actuel de l'utilisateur
-  const userSubscription = await db.userSubscription.findFirst({
-    where: {
-      userId,
-      status: "active",
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-    },
-    include: {
-      config: true,
-    },
-  });
-
-  // Récupérer l'abonnement par défaut (isDefault = true)
-  const defaultSubscription = await db.subscriptionConfig.findFirst({
-    where: {
-      isDefault: true,
-    },
-  });
-
-  // Déterminer l'ID de l'abonnement à utiliser
-  let subscriptionId: string | null = null;
-  if (userSubscription) {
-    subscriptionId = userSubscription.configId?.toString();
-  } else if (defaultSubscription) {
-    subscriptionId = defaultSubscription.id.toString();
-  }
-
-  // Filtrer les modèles selon la logique d'abonnement dynamique
-  const result = Object.entries(models).reduce(
-    (acc: ModelsByProvider, [providerKey, provider]) => {
-      const filteredModels = provider.models.filter((model) => {
-        // Vérifier si le modèle est accessible selon les abonnements dynamiques
-        if (!Array.isArray(model.availableSubscriptions)) {
-          return false;
-        }
-
-        // Si on a un ID d'abonnement, vérifier si le modèle est accessible
-        if (subscriptionId) {
-          const hasAccess =
-            model.availableSubscriptions.includes(subscriptionId);
-          return hasAccess;
-        }
-
-        // Si pas d'abonnement du tout, pas d'accès
-        return false;
-      });
-
-      if (filteredModels.length > 0) {
-        acc[providerKey] = {
-          ...provider,
-          models: filteredModels,
-        };
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return result;
-};
 // & ////////////////////////////////////////////////////////////////////////FUNCTIONS/////////////////////////////////////////////////////////////////////////////////////////
 
 // * ////////////////////////////////////////////////////////////////////////ROUTER/////////////////////////////////////////////////////////////////////////////////////////
@@ -215,9 +137,8 @@ export const availableModelsRouter = createTRPCRouter({
     return formattedModels;
   }),
 
-  // Récupère les modèles filtrés selon le rôle et le type de compte de l'utilisateur
-  getFiltred: protectedProcedure.query(async ({ ctx: { db, session } }) => {
-    const { role: userRole, accountType: userAccountType } = session.user;
+  // App locale : mêmes modèles pour tous (pas de filtre par config)
+  getFiltred: protectedProcedure.query(async ({ ctx: { db } }) => {
     const models = await db.iaLlm.findMany({
       include: {
         providerRelation: true,
@@ -226,13 +147,27 @@ export const availableModelsRouter = createTRPCRouter({
         provider: "asc",
       },
     });
-    const formattedModels = formatModels(models);
-    return filterModelsByUser(
-      formattedModels,
-      userRole,
-      userAccountType,
-      session.user.id,
-      db,
-    );
+    const formatted = formatModels(models);
+    const providers = await db.iaProvider.findMany({
+      select: {
+        value: true,
+        label: true,
+        text: true,
+        className: true,
+        enabled: true,
+      },
+    });
+    providers.forEach((p) => {
+      if (!formatted[p.value]) {
+        formatted[p.value] = {
+          providerLabel: p.label,
+          providerText: p.text,
+          providerClassName: p.className,
+          providerEnabled: p.enabled,
+          models: [],
+        };
+      }
+    });
+    return formatted;
   }),
 });

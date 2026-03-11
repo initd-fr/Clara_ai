@@ -254,11 +254,11 @@ export default function DeleteAccountModal({
                             </li>
                             <li className="flex items-center gap-2 text-error/80">
                               <div className="h-1.5 w-1.5 rounded-full bg-error"></div>
-                              Votre abonnement plateforme (résilié)
+                              Votre accès plateforme (résilié)
                             </li>
                             <li className="flex items-center gap-2 text-error/80">
                               <div className="h-1.5 w-1.5 rounded-full bg-error"></div>
-                              Vos abonnements aux modèles store (résiliés)
+                              Vos accès aux modèles store (résiliés)
                             </li>
                             <li className="flex items-center gap-2 text-error/80">
                               <div className="h-1.5 w-1.5 rounded-full bg-error"></div>

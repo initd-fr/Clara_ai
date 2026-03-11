@@ -135,8 +135,8 @@ export function DeleteOwnAccountModal({
                       <li>• Tous vos modèles personnels et documents</li>
                       <li>• Toutes vos conversations et messages</li>
                       <li>• Vos accès aux modèles store</li>
-                      <li>• Votre abonnement plateforme (résilié)</li>
-                      <li>• Vos abonnements aux modèles store (résiliés)</li>
+                      <li>• Votre accès plateforme (résilié)</li>
+                      <li>• Vos accès aux modèles store (résiliés)</li>
                       <li>• Vos tickets de support</li>
                     </ul>
                   </div>

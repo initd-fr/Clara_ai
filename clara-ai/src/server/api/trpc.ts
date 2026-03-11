@@ -104,70 +104,8 @@ const rateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
 
   if (role === "support" || role === "admin") {
     limiter = limiters.support;
-  } else {
-    // Récupérer la configuration d'abonnement actuelle de l'utilisateur
-    try {
-      const userSubscription = await db.userSubscription.findFirst({
-        where: {
-          userId: sessionUser?.id,
-          status: "active",
-        },
-        include: {
-          config: true,
-        },
-      });
-
-      if (userSubscription?.config) {
-        const config = userSubscription.config;
-
-        // Déterminer le limiter basé sur les permissions réelles
-        if (
-          config.canAccessTeamFeatures &&
-          config.canCreatePersonalModels &&
-          config.canAccessStoreModels
-        ) {
-          // Abonnement complet avec toutes les fonctionnalités
-          limiter = limiters.enterprise;
-        } else if (
-          config.canCreatePersonalModels ||
-          config.canAccessStoreModels
-        ) {
-          // Abonnement avec certaines fonctionnalités
-          limiter = limiters.premium;
-        } else {
-          // Abonnement de base
-          limiter = limiters.default;
-        }
-      } else {
-        // Pas d'abonnement actif, utiliser l'abonnement par défaut
-        const defaultSubscription = await db.subscriptionConfig.findFirst({
-          where: { isDefault: true, isActive: true },
-        });
-
-        if (defaultSubscription) {
-          if (
-            defaultSubscription.canAccessTeamFeatures &&
-            defaultSubscription.canCreatePersonalModels &&
-            defaultSubscription.canAccessStoreModels
-          ) {
-            limiter = limiters.enterprise;
-          } else if (
-            defaultSubscription.canCreatePersonalModels ||
-            defaultSubscription.canAccessStoreModels
-          ) {
-            limiter = limiters.premium;
-          }
-        }
-      }
-    } catch (error) {
-      console.warn(
-        "Erreur lors de la récupération de l'abonnement pour le rate limiting:",
-        error,
-      );
-      // En cas d'erreur, utiliser le limiter par défaut
-      limiter = limiters.default;
-    }
   }
+  // App locale : un seul limiter pour tous les utilisateurs
 
   try {
     // Ajouter la requête à la file d'attente

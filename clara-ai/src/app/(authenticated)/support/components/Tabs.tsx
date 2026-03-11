@@ -79,7 +79,10 @@ export const Tabs = memo(({ tabs, activeTab, onChange }: TabsProps) => {
   }, [handleWheel]);
 
   // Mémoisation des classes CSS
-  const containerClasses = useMemo(() => "sticky top-0 z-10 w-full", []);
+  const containerClasses = useMemo(
+    () => "sticky top-0 z-10 w-full bg-gradient-to-br from-[#25f5ef]/5 via-[#931975]/10 to-[#580744]/15",
+    [],
+  );
 
   // ~ ///////////////////////////////////////////////////////////////////////////////HOOKS///////////////////////////////////////////////////////////////////////////////////////
 

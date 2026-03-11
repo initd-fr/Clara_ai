@@ -12,11 +12,14 @@ import type {
 import createAnAgent, { createAnExpert } from "./Services/createService";
 import { emitProgress } from "~/server/shared/progressBridge";
 import type { Session } from "next-auth";
-import { AccessControlService } from "~/server/services/accessControl";
 
 let _openai: OpenAI | null = null;
 const getOpenAI = (): OpenAI => {
-  if (!process.env.OPENAI_API_KEY) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "OPENAI_API_KEY non configurée" });
+  if (!process.env.OPENAI_API_KEY)
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "OPENAI_API_KEY non configurée",
+    });
   if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   return _openai;
 };
@@ -42,33 +45,11 @@ export const speedCreateRouter = createTRPCRouter({
               where: {
                 enabled: true,
               },
-              include: {
-                subscriptionConfigs: {
-                  include: {
-                    config: true,
-                  },
-                },
-              },
             },
           },
         });
 
-        const userSubscription = await ctx.db.userSubscription.findUnique({
-          where: { userId: ctx.session.user.id },
-          include: {
-            config: {
-              include: {},
-            },
-          },
-        });
-
-        const canCreatePersonalModels =
-          await AccessControlService.canCreatePersonalModels(
-            ctx.session.user.id,
-          );
-        const canAccessStoreModels =
-          await AccessControlService.canAccessStoreModels(ctx.session.user.id);
-
+        // App locale : tous les LLM activés sont accessibles
         const providerData = providers
           .map((provider) => ({
             value: provider.value,
@@ -76,15 +57,7 @@ export const speedCreateRouter = createTRPCRouter({
             text: provider.text,
             className: provider.className,
             models: provider.llms
-              .filter(
-                (llm) =>
-                  ctx.session.user.role === "support" ||
-                  ctx.session.user.role === "admin" ||
-                  llm.subscriptionConfigs.some(
-                    (configLLM) =>
-                      configLLM.configId === userSubscription?.configId,
-                  ),
-              )
+              .filter((llm) => llm.enabled)
               .map((llm) => ({
                 llmId: llm.id,
                 llmValue: llm.value,
@@ -94,13 +67,6 @@ export const speedCreateRouter = createTRPCRouter({
               })),
           }))
           .filter((provider) => provider.models.length > 0);
-
-        console.log("🔐 Permissions utilisateur:", {
-          subscriptionConfigId: userSubscription?.configId,
-          canCreatePersonalModels,
-          canAccessStoreModels,
-          availableModels: providerData.length,
-        });
 
         // 🔥 Log détaillé des modèles disponibles pour cet utilisateur
         console.log("📋 Modèles disponibles pour l'utilisateur:");
@@ -141,12 +107,11 @@ export const speedCreateRouter = createTRPCRouter({
           console.log(`✅ Using first accessible model: ${speedCreateModel}`);
         }
 
-        // Si toujours aucun modèle, erreur
         if (!speedCreateModel) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message:
-              "Aucun modèle accessible avec votre abonnement. Veuillez contacter le support.",
+              "Aucun modèle LLM configuré. Ajoutez des modèles dans Support > Models.",
           });
         }
 
@@ -445,42 +410,44 @@ Une fois la demande comprise :
           ) {
             console.warn("🔄 Tentative avec gpt-4o-mini...");
             try {
-              const fallbackCompletion = await getOpenAI().chat.completions.create({
-                model: "gpt-4o-mini",
-                messages,
-                tools: [
-                  {
-                    type: "function",
-                    function: {
-                      name: "createAnAgent",
-                      description:
-                        "Crée un agent IA avec les paramètres spécifiés. Utilise cette fonction dès que tu as les informations essentielles pour créer un agent fonctionnel.",
-                      parameters: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            type: "string",
-                            description: "Nom de l'agent",
+              const fallbackCompletion =
+                await getOpenAI().chat.completions.create({
+                  model: "gpt-4o-mini",
+                  messages,
+                  tools: [
+                    {
+                      type: "function",
+                      function: {
+                        name: "createAnAgent",
+                        description:
+                          "Crée un agent IA avec les paramètres spécifiés. Utilise cette fonction dès que tu as les informations essentielles pour créer un agent fonctionnel.",
+                        parameters: {
+                          type: "object",
+                          properties: {
+                            name: {
+                              type: "string",
+                              description: "Nom de l'agent",
+                            },
+                            prompt: {
+                              type: "string",
+                              description:
+                                "Prompt système détaillé pour l'agent",
+                            },
+                            modelName: {
+                              type: "string",
+                              description: "Nom du modèle à utiliser",
+                            },
+                            provider: {
+                              type: "string",
+                              description: "Fournisseur du modèle",
+                            },
                           },
-                          prompt: {
-                            type: "string",
-                            description: "Prompt système détaillé pour l'agent",
-                          },
-                          modelName: {
-                            type: "string",
-                            description: "Nom du modèle à utiliser",
-                          },
-                          provider: {
-                            type: "string",
-                            description: "Fournisseur du modèle",
-                          },
+                          required: ["name", "prompt", "modelName", "provider"],
                         },
-                        required: ["name", "prompt", "modelName", "provider"],
                       },
                     },
-                  },
-                ],
-              });
+                  ],
+                });
 
               const fallbackMessage = fallbackCompletion.choices[0]?.message;
               return {
@@ -558,26 +525,11 @@ Une fois la demande comprise :
               where: {
                 enabled: true,
               },
-              include: {
-                subscriptionConfigs: {
-                  include: {
-                    config: true,
-                  },
-                },
-              },
             },
           },
         });
 
-        const userSubscription = await ctx.db.userSubscription.findUnique({
-          where: { userId: ctx.session.user.id },
-          include: {
-            config: {
-              include: {},
-            },
-          },
-        });
-
+        // App locale : tous les LLM activés sont accessibles
         const providerData = providers
           .map((provider) => ({
             value: provider.value,
@@ -585,15 +537,7 @@ Une fois la demande comprise :
             text: provider.text,
             className: provider.className,
             models: provider.llms
-              .filter(
-                (llm) =>
-                  ctx.session.user.role === "support" ||
-                  ctx.session.user.role === "admin" ||
-                  llm.subscriptionConfigs.some(
-                    (configLLM) =>
-                      configLLM.configId === userSubscription?.configId,
-                  ),
-              )
+              .filter((llm) => llm.enabled)
               .map((llm) => ({
                 llmId: llm.id,
                 llmValue: llm.value,
@@ -603,7 +547,7 @@ Une fois la demande comprise :
           }))
           .filter((provider) => provider.models.length > 0);
 
-        // 🔥 Log détaillé des modèles disponibles pour cet utilisateur (configureExpert)
+        // Log modèles disponibles (configureExpert)
         console.log(
           "📋 Modèles disponibles pour l'utilisateur (configureExpert):",
         );
@@ -646,12 +590,11 @@ Une fois la demande comprise :
           );
         }
 
-        // Si toujours aucun modèle, erreur
         if (!speedCreateModel) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message:
-              "Aucun modèle accessible avec votre abonnement. Veuillez contacter le support.",
+              "Aucun modèle LLM configuré. Ajoutez des modèles dans Support > Models.",
           });
         }
 
@@ -977,43 +920,44 @@ Une fois les analyses terminées :
           ) {
             console.warn("🔄 Tentative avec gpt-4o-mini...");
             try {
-              const fallbackCompletion = await getOpenAI().chat.completions.create({
-                model: "gpt-4o-mini",
-                messages,
-                tools: [
-                  {
-                    type: "function",
-                    function: {
-                      name: "createAnExpert",
-                      description:
-                        "Crée un expert IA avec les paramètres spécifiés et le document fourni. Utilise cette fonction dès que tu as les informations essentielles pour créer un expert fonctionnel.",
-                      parameters: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            type: "string",
-                            description: "Nom de l'expert",
+              const fallbackCompletion =
+                await getOpenAI().chat.completions.create({
+                  model: "gpt-4o-mini",
+                  messages,
+                  tools: [
+                    {
+                      type: "function",
+                      function: {
+                        name: "createAnExpert",
+                        description:
+                          "Crée un expert IA avec les paramètres spécifiés et le document fourni. Utilise cette fonction dès que tu as les informations essentielles pour créer un expert fonctionnel.",
+                        parameters: {
+                          type: "object",
+                          properties: {
+                            name: {
+                              type: "string",
+                              description: "Nom de l'expert",
+                            },
+                            prompt: {
+                              type: "string",
+                              description:
+                                "Prompt système détaillé pour l'expert",
+                            },
+                            modelName: {
+                              type: "string",
+                              description: "Nom du modèle à utiliser",
+                            },
+                            provider: {
+                              type: "string",
+                              description: "Fournisseur du modèle",
+                            },
                           },
-                          prompt: {
-                            type: "string",
-                            description:
-                              "Prompt système détaillé pour l'expert",
-                          },
-                          modelName: {
-                            type: "string",
-                            description: "Nom du modèle à utiliser",
-                          },
-                          provider: {
-                            type: "string",
-                            description: "Fournisseur du modèle",
-                          },
+                          required: ["name", "prompt", "modelName", "provider"],
                         },
-                        required: ["name", "prompt", "modelName", "provider"],
                       },
                     },
-                  },
-                ],
-              });
+                  ],
+                });
 
               const fallbackMessage = fallbackCompletion.choices[0]?.message;
               return {

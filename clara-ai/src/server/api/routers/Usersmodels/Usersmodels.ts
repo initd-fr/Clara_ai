@@ -112,27 +112,7 @@ export const UserModelsRouter = createTRPCRouter({
         done: false,
       });
 
-      // Vérification des permissions de création de modèles personnels
-      const canCreatePersonalModels =
-        await AccessControlService.canCreatePersonalModels(userId);
-      if (!canCreatePersonalModels) {
-        emitProgress({
-          userId,
-          taskId,
-          type: "create",
-          step: "Erreur: Permissions insuffisantes",
-          progress: 0,
-          done: false,
-          error:
-            "Votre abonnement ne permet pas de créer des modèles personnels",
-        });
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "Votre abonnement ne permet pas de créer des modèles personnels.",
-        });
-      }
-
+      // App locale : pas de vérification de permissions
       emitProgress({
         userId,
         taskId,
@@ -489,27 +469,7 @@ export const UserModelsRouter = createTRPCRouter({
         done: false,
       });
 
-      // Vérification des permissions de création de modèles personnels
-      const canCreatePersonalModels =
-        await AccessControlService.canCreatePersonalModels(userId);
-      if (!canCreatePersonalModels) {
-        emitProgress({
-          userId,
-          taskId,
-          type: "create",
-          step: "Erreur: Permissions insuffisantes",
-          progress: 0,
-          done: false,
-          error:
-            "Votre abonnement ne permet pas de créer des modèles personnels",
-        });
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "Votre abonnement ne permet pas de créer des modèles personnels.",
-        });
-      }
-
+      // App locale : pas de vérification de permissions
       // Vérification des limites de stockage dynamiques
       const storageLimit = await AccessControlService.getStorageLimit(userId);
       if (storageLimit !== null) {

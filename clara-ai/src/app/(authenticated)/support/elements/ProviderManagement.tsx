@@ -116,13 +116,6 @@ const ConfirmDeleteModal = ({
                             modèles
                           </span>
                         </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-error">•</span>
-                          <span>
-                            Les configurations d&apos;abonnement seront mises à
-                            jour
-                          </span>
-                        </li>
                       </ul>
                     </div>
                   </div>

@@ -205,7 +205,7 @@ export const mistralRouter = createTRPCRouter({
         }
 
         // Paralléliser les requêtes DB pour optimiser les performances
-        const [systemPrompt, user, subscriptionInfo, { lastExchanges }] =
+        const [systemPrompt, user, { lastExchanges }] =
           await Promise.all([
             // Récupération du prompt système
             settingsManager.get("LLM_SystemPrompt_Agent") as Promise<string>,
@@ -217,27 +217,6 @@ export const mistralRouter = createTRPCRouter({
                 firstName: true,
                 lastName: true,
                 accountType: true,
-              },
-            }),
-
-            // Récupérer la limite de tokens pour ce LLM spécifique et cet abonnement
-            db.userSubscription.findUnique({
-              where: { userId },
-              include: {
-                config: {
-                  select: {
-                    availableLLMs: {
-                      where: {
-                        llm: {
-                          value: model.modelName,
-                        },
-                      },
-                      select: {
-                        maxOutputTokens: true,
-                      },
-                    },
-                  },
-                },
               },
             }),
 
@@ -319,16 +298,10 @@ export const mistralRouter = createTRPCRouter({
                   userPrompt: model.prompt,
                   url: detectedUrl,
                   maxInputTokens: model.modelNameRelation.maxInputTokens,
-                  maxOutputTokens: (() => {
-                    const raw =
-                      subscriptionInfo?.config?.availableLLMs?.[0]
-                        ?.maxOutputTokens !== null
-                        ? (subscriptionInfo?.config?.availableLLMs?.[0]
-                            ?.maxOutputTokens ??
-                          model.modelNameRelation.maxOutputTokens)
-                        : model.modelNameRelation.maxOutputTokens;
-                    return Math.min(raw, 100_000);
-                  })(),
+                  maxOutputTokens: Math.min(
+                    model.modelNameRelation.maxOutputTokens,
+                    100_000,
+                  ),
                   promptVariables,
                   userAccountType: user?.accountType || "",
                 },

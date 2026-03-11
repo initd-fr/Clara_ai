@@ -16,7 +16,6 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { Lock, Unlock } from "lucide-react";
 import { useSidebar } from "~/components/SidebarProvider";
-import { api } from "~/trpc/react";
 //~ ////////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
 
 // ? Chargement dynamique des composants avec preload
@@ -169,21 +168,11 @@ const LogoSidebar = memo(
 
 LogoSidebar.displayName = "LogoSidebar";
 
-// Hook pour déterminer le type d'abonnement
-const useSubscriptionType = () => {
-  const { data: subscriptionInfo } = api.user.getSubscriptionInfo.useQuery();
-
-  // Déterminer les permissions selon l'abonnement
-  const canCreatePersonalModels =
-    subscriptionInfo?.canCreatePersonalModels ?? false;
-  const canAccessStoreModels = subscriptionInfo?.canAccessStoreModels ?? false;
-
-  return {
-    canCreatePersonalModels,
-    canAccessStoreModels,
-    isLoading: !subscriptionInfo,
-  };
-};
+const useSubscriptionType = () => ({
+  canCreatePersonalModels: true,
+  canAccessStoreModels: true,
+  isLoading: false,
+});
 
 // SidebarContent optimisé avec useCallback et chargement conditionnel
 const SidebarContent = memo(

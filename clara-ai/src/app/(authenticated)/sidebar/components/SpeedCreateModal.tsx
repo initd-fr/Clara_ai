@@ -444,7 +444,7 @@ export default function SpeedCreateModal({
           toast.error(
             `Limite de stockage dépassée (${totalStorageLimit(
               (user as UserType)?.accountType ?? "free",
-            )}MB). Veuillez supprimer des fichiers ou passer à l'abonnement supérieur.`,
+            )}MB). Veuillez supprimer des fichiers ou augmenter votre limite de stockage.`,
           );
           return;
         }

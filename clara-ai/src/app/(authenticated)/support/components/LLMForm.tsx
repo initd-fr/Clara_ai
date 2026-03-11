@@ -26,7 +26,6 @@ interface FormData {
   description: string;
   enabled: boolean;
   isDefault: boolean;
-  availableSubscriptions: string[];
 }
 // ~ ///////////////////////////////////////////////////////////////////////////////TYPES///////////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +43,6 @@ const LLMForm = memo(
       description: "",
       enabled: true,
       isDefault: false,
-      availableSubscriptions: [],
     });
 
     const createLLM = api.adminModels.create.useMutation();
@@ -73,7 +71,6 @@ const LLMForm = memo(
         description: "",
         enabled: true,
         isDefault: false,
-        availableSubscriptions: [],
       });
     }, []);
 
@@ -146,8 +143,6 @@ const LLMForm = memo(
       [providers],
     );
 
-    const subscriptionOptions = useMemo(() => [], []);
-
     // Mémoisation des classes CSS pour les performances
     const formClasses = useMemo(() => "space-y-6", []);
     const inputClasses = useMemo(
@@ -179,7 +174,6 @@ const LLMForm = memo(
           description: selectedLLM.description || "",
           enabled: selectedLLM.llmEnabled,
           isDefault: selectedLLM.llmIsDefault,
-          availableSubscriptions: selectedLLM.availableSubscriptions,
         });
       } else {
         resetForm();
@@ -342,13 +336,13 @@ const LLMForm = memo(
                 <div className="form-control">
                   <label
                     className={clsx(
-                      "label cursor-pointer",
+                      "label cursor-pointer justify-start gap-3",
                       isDefaultDisabled && "opacity-50",
                     )}
                   >
                     <input
                       type="checkbox"
-                      className="checkbox-primary checkbox"
+                      className="checkbox-primary checkbox shrink-0"
                       checked={formData.isDefault}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -360,7 +354,7 @@ const LLMForm = memo(
                       name="isDefault"
                       aria-describedby="isDefault-help"
                     />
-                    <span className="label-text ml-2">
+                    <span className="label-text">
                       Modèle par défaut
                       {isDefaultDisabled && (
                         <span className="ml-2 text-xs text-warning">
@@ -373,23 +367,6 @@ const LLMForm = memo(
                     Définir ce modèle comme modèle par défaut pour les
                     migrations automatiques
                   </div>
-                </div>
-              </div>
-
-              {/* Abonnements */}
-              <div className="col-span-full">
-                <label className="label">
-                  <span className="label-text">Abonnements disponibles</span>
-                </label>
-                <div
-                  className="flex flex-wrap gap-4"
-                  role="group"
-                  aria-labelledby="subscriptions-label"
-                >
-                  <div id="subscriptions-label" className="sr-only">
-                    Sélection des abonnements pour ce modèle
-                  </div>
-                  {subscriptionOptions}
                 </div>
               </div>
             </div>

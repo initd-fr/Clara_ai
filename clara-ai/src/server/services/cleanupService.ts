@@ -174,220 +174,35 @@ export class CleanupService {
     }
   }
 
-  /**
-   * Nettoie les abonnements d'essai expirés pour un utilisateur spécifique
-   */
-  static async cleanupUserExpiredSubscriptions(userId: string) {
-    try {
-      // Récupérer l'abonnement par défaut
-      const defaultSubscription = await db.subscriptionConfig.findFirst({
-        where: { isDefault: true, isActive: true },
-      });
-
-      if (!defaultSubscription) {
-        console.log("⚠️ Aucun abonnement par défaut configuré");
-        return { removed: 0 };
-      }
-
-      // Récupérer les abonnements expirés de cet utilisateur
-      const expiredSubscriptions = await db.userSubscription.findMany({
-        where: {
-          userId,
-          expiresAt: {
-            lt: new Date(),
-          },
-        },
-        include: {
-          config: {
-            select: { name: true },
-          },
-        },
-      });
-
-      if (expiredSubscriptions.length === 0) {
-        return { removed: 0 };
-      }
-
-      console.log(
-        `📊 ${expiredSubscriptions.length} abonnements expirés trouvés pour l'utilisateur ${userId}`,
-      );
-
-      // Supprimer les abonnements expirés et remettre sur l'abonnement par défaut
-      for (const subscription of expiredSubscriptions) {
-        // Supprimer l'abonnement expiré
-        await db.userSubscription.delete({
-          where: { id: subscription.id },
-        });
-
-        // Créer l'abonnement par défaut
-        await db.userSubscription.create({
-          data: {
-            userId: subscription.userId,
-            configId: defaultSubscription.id,
-            status: "active",
-            expiresAt: null, // Pas d'expiration pour l'abonnement par défaut
-          },
-        });
-
-        // Mettre à jour l'utilisateur
-        await db.user.update({
-          where: { id: subscription.userId },
-          data: {
-            accountType: defaultSubscription.name,
-          },
-        });
-
-        // Créer le log
-        await db.userLogs.create({
-          data: {
-            userId: subscription.userId,
-            action: "AUTO_REVERT_TO_DEFAULT",
-            description: `Abonnement d'essai "${subscription.config.name}" expiré, retour automatique vers l'abonnement par défaut "${defaultSubscription.name}" lors de la connexion`,
-            firstName: "Système",
-            lastName: "Automatique",
-            email: "system@clara-ai.com",
-          },
-        });
-
-        console.log(
-          `📝 Abonnement expiré traité lors de la connexion: ${subscription.userId} -> ${defaultSubscription.name}`,
-        );
-      }
-
-      return { removed: expiredSubscriptions.length };
-    } catch (error) {
-      console.error(
-        "Erreur lors du nettoyage des abonnements expirés de l'utilisateur:",
-        error,
-      );
-      throw error;
-    }
+  /** App locale : plus de nettoyage de configs expirées */
+  static async cleanupUserExpiredSubscriptions(_userId: string) {
+    return { removed: 0 };
   }
 
-  /**
-   * Nettoie les abonnements d'essai expirés et remet les utilisateurs sur l'abonnement par défaut
-   */
+  /** App locale : plus de nettoyage de configs expirées */
   static async cleanupExpiredSubscriptions() {
-    try {
-      console.log("🔄 Début du nettoyage des abonnements expirés...");
-
-      // Récupérer l'abonnement par défaut
-      const defaultSubscription = await db.subscriptionConfig.findFirst({
-        where: { isDefault: true, isActive: true },
-      });
-
-      if (!defaultSubscription) {
-        console.log("⚠️ Aucun abonnement par défaut configuré");
-        return { removed: 0, logs: [] };
-      }
-
-      // Récupérer les abonnements expirés
-      const expiredSubscriptions = await db.userSubscription.findMany({
-        where: {
-          expiresAt: {
-            lt: new Date(),
-          },
-        },
-        include: {
-          user: {
-            select: { email: true, firstName: true, lastName: true },
-          },
-          config: {
-            select: { name: true },
-          },
-        },
-      });
-
-      console.log(
-        `📊 ${expiredSubscriptions.length} abonnements expirés trouvés`,
-      );
-
-      if (expiredSubscriptions.length === 0) {
-        console.log("✅ Aucun abonnement expiré à nettoyer");
-        return { removed: 0, logs: [] };
-      }
-
-      // Supprimer les abonnements expirés et remettre sur l'abonnement par défaut
-      const logs = [];
-      for (const subscription of expiredSubscriptions) {
-        // Supprimer l'abonnement expiré
-        await db.userSubscription.delete({
-          where: { id: subscription.id },
-        });
-
-        // Créer l'abonnement par défaut
-        await db.userSubscription.create({
-          data: {
-            userId: subscription.userId,
-            configId: defaultSubscription.id,
-            status: "active",
-            expiresAt: null, // Pas d'expiration pour l'abonnement par défaut
-          },
-        });
-
-        // Mettre à jour l'utilisateur
-        await db.user.update({
-          where: { id: subscription.userId },
-          data: {
-            accountType: defaultSubscription.name,
-          },
-        });
-
-        // Créer le log
-        const log = await db.userLogs.create({
-          data: {
-            userId: subscription.userId,
-            action: "AUTO_REVERT_TO_DEFAULT",
-            description: `Abonnement d'essai "${subscription.config.name}" expiré, retour automatique vers l'abonnement par défaut "${defaultSubscription.name}"`,
-            firstName: "Système",
-            lastName: "Automatique",
-            email: "system@clara-ai.com",
-          },
-        });
-        logs.push(log);
-
-        console.log(
-          `📝 Abonnement expiré traité: ${subscription.user.email} -> ${defaultSubscription.name}`,
-        );
-      }
-
-      console.log("✅ Nettoyage des abonnements expirés terminé");
-      return { removed: expiredSubscriptions.length, logs };
-    } catch (error) {
-      console.error(
-        "❌ Erreur lors du nettoyage des abonnements expirés:",
-        error,
-      );
-      throw error;
-    }
+    return { removed: 0, logs: [] };
   }
 
   /**
-   * Exécute tous les nettoyages
+   * Exécute les nettoyages (app locale : accès expirés + vieux logs uniquement)
    */
   static async runFullCleanup() {
     try {
-      console.log("🔄 Début du nettoyage complet...");
-
-      const [expiredAccessResult, oldLogsResult, expiredSubscriptionsResult] =
-        await Promise.all([
-          this.cleanupExpiredAccess(),
-          this.cleanupOldLogs(),
-          this.cleanupExpiredSubscriptions(),
-        ]);
-
-      console.log("✅ Nettoyage complet terminé avec succès");
+      console.log("🔄 Nettoyage...");
+      const [expiredAccessResult, oldLogsResult] = await Promise.all([
+        this.cleanupExpiredAccess(),
+        this.cleanupOldLogs(),
+      ]);
       console.log(
-        `📊 Résumé: ${expiredAccessResult.removed} accès expirés, ${oldLogsResult.removed} logs anciens, ${expiredSubscriptionsResult.removed} abonnements expirés`,
+        `✅ Nettoyage terminé: ${expiredAccessResult.removed} accès expirés, ${oldLogsResult.removed} logs anciens`,
       );
-
       return {
         expiredAccessRemoved: expiredAccessResult.removed,
         oldLogsRemoved: oldLogsResult.removed,
-        expiredSubscriptionsRemoved: expiredSubscriptionsResult.removed,
       };
     } catch (error) {
-      console.error("❌ Erreur lors du nettoyage complet:", error);
+      console.error("❌ Erreur nettoyage:", error);
       throw error;
     }
   }

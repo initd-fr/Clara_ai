@@ -64,7 +64,7 @@ export default function SupportPage() {
   ///////////////////////////////////////////////////////////////////////////////RENDER///////////////////////////////////////////////////////////////////////////////////////
   return (
     <div className="min-h-screen">
-      <div className="-py-6  rounded-tl-3xl  bg-gradient-to-br from-[#25f5ef]/5 via-[#931975]/10 to-[#580744]/15 backdrop-blur-sm">
+      <div className="-py-6 rounded-tl-3xl bg-gradient-to-br from-[#25f5ef]/5 via-[#931975]/10 to-[#580744]/15">
         <div className="container mx-auto flex min-h-[120px] items-center justify-center">
           <Tabs
             tabs={tabsList}

@@ -67,7 +67,6 @@ model User {
     tickets                Ticket[] // Tickets créés par l'utilisateur
     assignedTickets        Ticket[]           @relation("AssignedTickets") // Tickets assignés à l'utilisateur (pour support/admin)
     staffActions           TicketTracing[]    @relation("StaffActions") // Actions du staff sur les tickets
-    userSubscriptions      UserSubscription[] // Nouveaux abonnements utilisateur
     StoreChat              StoreChat[]
     StoreChatMessage       StoreChatMessage[]
 }
@@ -124,11 +123,7 @@ model iaLlm {
     maxInputTokens         Int        @default(1)
     maxOutputTokens        Int        @default(1)
     description            String     @default("")
-    availableSubscriptions Json       @default("[]") // Contiendra ["uuid1", "uuid2", "uuid3"]
     models                 Models[] // Relation inversée
-
-    // Relations many-to-many avec les configurations d'abonnements
-    subscriptionConfigs SubscriptionConfigLLM[]
 }
 
 model iaProvider {
@@ -160,8 +155,7 @@ model Models {
     messages          Message[] // Relation inversée
     documents         Document[] // Relation inversée
     storeAccess       StoreAccess[] // Accès des utilisateurs à ce modèle store
-    storeModel        StoreModel? // Nouveau lien vers StoreModel
-    includedInSubscriptions SubscriptionIncludedModels[] // Abonnements qui incluent ce modèle
+    storeModel        StoreModel? // Lien vers StoreModel
 }
 
 model StoreAccess {
@@ -225,72 +219,6 @@ model Message {
 
 
 
-// Configurations d'abonnements
-model SubscriptionConfig {
-    id          Int      @id @default(autoincrement())
-    name        String // "Essentiel", "Juridique Basic", "Médical Premium"
-    description String?
-
-    // Type d'abonnement (supprimé pour permettre des abonnements vraiment dynamiques)
-    // Les permissions déterminent le comportement au lieu d'un type prédéfini
-
-    // Limites
-    dailyMessageLimit Int? // null = illimité
-    storageLimitGB    Int? // null = illimité
-    maxPersonalModels Int? // null = illimité
-
-    // Permissions
-    canCreatePersonalModels Boolean @default(true)
-    canAccessStoreModels    Boolean @default(false) // true pour thématiques
-    canAccessTeamFeatures   Boolean @default(false) // true pour équipe
-
-    // Fonctionnalités
-    features Json @default("[]") // ["web_search", "file_upload"]
-
-    // Configuration par défaut
-    isDefault Boolean @default(false) // Un seul abonnement peut être par défaut
-
-    isActive  Boolean  @default(true)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    // Relations
-    availableLLMs     SubscriptionConfigLLM[] // Many-to-many avec les LLMs
-    includedModels    SubscriptionIncludedModels[] // Modèles store inclus dans l'abonnement
-    userSubscriptions UserSubscription[]
-}
-
-// Liaison LLMs ↔ Configurations d'abonnements (many-to-many)
-model SubscriptionConfigLLM {
-    id              Int      @id @default(autoincrement())
-    configId        Int
-    llmId           Int
-    maxOutputTokens Int?     // Limite de tokens de sortie pour ce LLM dans cet abonnement (null = illimité)
-    createdAt       DateTime @default(now())
-
-    config SubscriptionConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
-    llm    iaLlm              @relation(fields: [llmId], references: [id], onDelete: Cascade)
-
-    @@unique([configId, llmId])
-    @@index([configId])
-    @@index([llmId])
-}
-
-// Liaison Abonnements ↔ Modèles Store inclus (many-to-many)
-model SubscriptionIncludedModels {
-    id        Int      @id @default(autoincrement())
-    configId  Int
-    modelId   Int // Lien vers le modèle store (Models.id)
-    createdAt DateTime @default(now())
-
-    config SubscriptionConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
-    model  Models             @relation(fields: [modelId], references: [id], onDelete: Cascade)
-
-    @@unique([configId, modelId])
-    @@index([configId])
-    @@index([modelId])
-}
-
 // Catégories pour les modèles store
 model StoreCategory {
     id          Int         @id @default(autoincrement())
@@ -332,24 +260,6 @@ model StoreModel {
     storeChats StoreChat[]
 
     @@index([categoryId])
-}
-
-// Abonnements utilisateur (un seul actif par utilisateur)
-model UserSubscription {
-    id                   Int       @id @default(autoincrement())
-    userId               String    @db.Uuid
-    configId             Int
-    status               String // "active", "canceled", "past_due"
-    expiresAt            DateTime?
-    createdAt            DateTime  @default(now())
-    updatedAt            DateTime  @updatedAt
-
-    user   User               @relation(fields: [userId], references: [id])
-    config SubscriptionConfig @relation(fields: [configId], references: [id])
-
-    @@unique([userId]) // Un seul abonnement actif par utilisateur
-    @@index([userId])
-    @@index([configId])
 }
 
 model News {

@@ -299,7 +299,7 @@ const ChatInput = memo(
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const dropZoneRef = useRef<HTMLDivElement>(null);
     const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
-    const { user, status } = useAppSession();
+    const { status } = useAppSession();
     const adjustTextAreaHeight = useCallback(() => {
       const textArea = textAreaRef.current;
       if (!textArea) return;
@@ -796,8 +796,7 @@ const ChatInput = memo(
                             %
                           </div>
 
-                          {user?.subscriptionInfo?.hasSubscription &&
-                            status === "authenticated" &&
+                          {status === "authenticated" &&
                             !uploadedFile &&
                             !isSpeedCreate && (
                               <SimplifyMenu

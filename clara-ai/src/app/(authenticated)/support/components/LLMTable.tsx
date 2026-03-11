@@ -201,39 +201,6 @@ export const LLMTable = memo(
       setDeleteModalState({ isOpen: false, llmId: null });
     }, []);
 
-    // // Mémoisation des classes CSS pour les performances
-    // const tableClasses = useMemo(() => "w-full", []);
-    // const theadClasses = useMemo(() => "bg-base-200/50 backdrop-blur-sm", []);
-    // const thClasses = useMemo(
-    //   () => "px-6 py-4 text-left text-sm font-medium text-base-content/70",
-    //   [],
-    // );
-    // const thCenterClasses = useMemo(
-    //   () => "px-6 py-4 text-center text-sm font-medium text-base-content/70",
-    //   [],
-    // );
-    // const tbodyClasses = useMemo(() => "divide-y divide-base-200", []);
-    // const providerRowClasses = useMemo(
-    //   () => "bg-base-200/30 backdrop-blur-sm",
-    //   [],
-    // );
-    // const llmRowClasses = useMemo(
-    //   () => "cursor-pointer bg-base-100 transition-colors hover:bg-base-200/50",
-    //   [],
-    // );
-    // const tdClasses = useMemo(() => "px-6 py-4 text-sm text-base-content", []);
-    // const tdMutedClasses = useMemo(
-    //   () => "px-6 py-4 text-sm text-base-content/70",
-    //   [],
-    // );
-    // const buttonClasses = useMemo(() => "btn btn-circle btn-ghost btn-sm", []);
-    // const buttonContainerClasses = useMemo(
-    //   () => "flex items-center justify-center gap-2",
-    //   [],
-    // );
-
-    const renderSubscriptions = useCallback((_llm: LLM) => "—", []);
-
     // ~ ///////////////////////////////////////////////////////////////////////////////RENDER///////////////////////////////////////////////////////////////////////////////////////
     return (
       <>
@@ -322,16 +289,6 @@ export const LLMTable = memo(
                             {llm.llmMaxOutputTokens?.toLocaleString() || "N/A"}
                           </span>
                         </div>
-                      </div>
-
-                      {/* Abonnements */}
-                      <div className="mb-4">
-                        <span className="text-xs text-base-content/60">
-                          Abonnements:
-                        </span>
-                        <p className="text-sm text-base-content/70">
-                          {renderSubscriptions(llm)}
-                        </p>
                       </div>
 
                       {/* Actions */}

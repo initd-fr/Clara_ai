@@ -14,10 +14,7 @@ import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
 // ~  ///////////////////////////////////////////////////////////////////////////////IMPORTS//////////////////////////////////////////////////////////////////////////////////////
 // ?  ///////////////////////////////////////////////////////////////////////////////TYPES///////////////////////////////////////////////////////////////////////////////////////
-// Types dynamiques basés sur les configurations d'abonnements
-export type BaseAccountType = string; // Maintenant dynamique
-
-// Interface pour les infos utilisateur
+export type BaseAccountType = string;
 export type UserRole = "user" | "support" | "admin" | "companyManager";
 export type UserType = {
   id: string;
@@ -62,7 +59,6 @@ const SessionProvider = memo(function SessionProvider({
   // ^ ///////////////////////////////////////////////////////////////////////////////STATE&VARIABLES//////////////////////////////////////////////////////////////////////////////
   const { data: session, status: nextAuthStatus } = useSession();
 
-  // Récupérer les informations d'abonnement
   const { data: subscriptionInfo } = api.user.getSubscriptionInfo.useQuery(
     undefined,
     {
@@ -76,29 +72,21 @@ const SessionProvider = memo(function SessionProvider({
 
   // ~ ///////////////////////////////////////////////////////////////////////////////EFFECTS/////////////////////////////////////////////////////////////////////////////////////
 
-  // Fonction pour calculer la limite de stockage (dynamique)
   const totalStorageLimit = useCallback((): number => {
-    // Utiliser les informations d'abonnement si disponibles
     if (subscriptionInfo?.hasSubscription && subscriptionInfo.storageLimitGB) {
-      return subscriptionInfo.storageLimitGB * 1024; // Convertir GB en MB
+      return subscriptionInfo.storageLimitGB * 1024;
     }
-
-    // Si pas d'abonnement ou pas de limite définie, illimité
-    return -1; // -1 = illimité
+    return -1; // illimité
   }, [subscriptionInfo]);
 
-  // Fonction pour calculer la limite de messages quotidiens (dynamique)
   const dailyMessagesLimit = useCallback((): number => {
-    // Utiliser uniquement les informations d'abonnement
     if (
       subscriptionInfo?.hasSubscription &&
       subscriptionInfo.dailyMessageLimit
     ) {
       return subscriptionInfo.dailyMessageLimit;
     }
-
-    // Si pas d'abonnement ou pas de limite définie, illimité
-    return -1; // -1 = illimité
+    return -1; // illimité
   }, [subscriptionInfo]);
 
   // ~ ///////////////////////////////////////////////////////////////////////////////EFFECTS/////////////////////////////////////////////////////////////////////////////////////

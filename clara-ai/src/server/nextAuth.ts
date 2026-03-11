@@ -55,7 +55,7 @@ export const authOptions: any = {
     newUser: "/home",
   },
   events: {
-    // Version locale : plus d'attribution d'abonnement à l'inscription
+    // Version locale : pas d'attribution de config à l'inscription
     async signOut({ session }: { session: any }) {
       if (session?.user?.id) {
         await db.user.update({
@@ -339,10 +339,9 @@ export const authOptions: any = {
           },
         });
 
-        // Nettoyage opportuniste des accès expirés
+        // Nettoyage opportuniste des accès expirés (app locale)
         try {
           await CleanupService.cleanupUserExpiredAccess(user.id);
-          await CleanupService.cleanupUserExpiredSubscriptions(user.id);
         } catch (error) {
           console.error("Erreur lors du nettoyage opportuniste:", error);
           // Ne pas bloquer la connexion si le nettoyage échoue

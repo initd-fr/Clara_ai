@@ -69,9 +69,9 @@ const placeholderRegex = /\{[^}]+\}/g;
 
 // Mapping des noms de catégories connus
 const CATEGORY_NAMES: Record<string, string> = {
-  "9": "Paramètres d'abonnements",
+  "9": "Paramètres accès",
   "100": "Prompts de Configuration",
-  "101": "Abonnement",
+  "101": "Accès",
 } as const;
 
 const PROMPTS_CATEGORY_NAME =
@@ -144,7 +144,7 @@ const SettingRow = memo(({ setting, onRefresh }: SettingRowProps) => {
   // Mémoisation des classes CSS
   const containerClasses = useMemo(
     () =>
-      "group relative overflow-hidden rounded-xl border border-base-300/50 bg-gradient-to-br from-base-100/80 to-base-200/50 p-6 shadow-lg backdrop-blur-sm transition-all hover:shadow-xl hover:border-primary/30",
+      "group relative overflow-hidden rounded-xl border border-base-300/50 bg-gradient-to-br from-base-100/80 to-base-200/50 p-6 shadow-lg transition-all hover:shadow-xl hover:border-primary/30",
     [],
   );
 
@@ -306,7 +306,7 @@ export const SettingsList = memo(
 
     const categoryContainerClasses = useMemo(
       () =>
-        "relative overflow-hidden rounded-2xl border border-base-300/50 bg-gradient-to-br from-base-100/80 to-base-200/50 shadow-lg backdrop-blur-sm",
+        "relative overflow-hidden rounded-2xl border border-base-300/50 bg-gradient-to-br from-base-100/80 to-base-200/50 shadow-lg",
       [],
     );
 

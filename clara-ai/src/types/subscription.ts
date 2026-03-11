@@ -1,4 +1,4 @@
-// Types pour les abonnements
+// Types pour la config utilisateur (stockage, limites)
 export interface SubscriptionConfig {
   id: number;
   name: string;

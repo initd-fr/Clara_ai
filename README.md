@@ -1,4 +1,4 @@
-# Clara AI — Assistant IA multi-tenant
+# Clara AI — Assistant IA (app locale)
 
 <p align="center">
   <img src="clara-ai/public/LogoClara_Dark.webp" alt="Clara AI" width="200" />
@@ -6,14 +6,14 @@
 
 [![License](https://img.shields.io/badge/License-Attribution%2BContact-blue.svg)](LICENSE)
 
-**Clara AI** est une plateforme web d’assistant conversationnel IA en **architecture multi-composants** :
+**Clara AI** est une plateforme web d’assistant conversationnel IA :
 
-- **Clara** (`clara-ai/`) : application Next.js (frontend + API tRPC), authentification, gestion des conversations et des modèles, base PostgreSQL (Prisma), stockage MinIO. Le chat et le RAG sont délégués au moteur Archibald.
+- **Clara** (`clara-ai/`) : application Next.js (frontend + API tRPC), authentification, gestion des conversations et des modèles personnels, base PostgreSQL (Prisma), stockage MinIO. Le chat et le RAG sont délégués au moteur Archibald.
 - **Archibald** (`archibald/`) : API FastAPI (Python) qui centralise les appels LLM (OpenAI, Mistral, Anthropic, Google), le RAG (pgvector), le traitement de documents et la recherche web (Tavily). Clara s’y connecte via `ARCHIBALD_API_URL` et `ARCHIBALD_API_KEY`.
 
-RAG (embeddings, recherche vectorielle) et abonnements/quotas sont gérés en base ; pas de paiement en ligne dans cette version.
+**Fonctionnement** : application **100 % locale**. Pas d'abonnements, pas de limites, pas de paiement.
 
-Ce dépôt est conçu pour être **simple à mettre en place** : un seul fichier `.env` à la racine (voir `.env.exemple`), à remplir puis exécuter `./start.sh` — et Clara tourne en prod sur votre machine. Un recruteur ou un ingénieur peut tester en quelques minutes, comprendre l’architecture via ce README, et consulter les README annexes ([clara-ai/](clara-ai/README.md), [archibald/](archibald/README.md)) pour les détails techniques.
+Un seul `.env` à la racine (voir `.env.exemple`), puis `./start.sh`. Schéma des données : `clara-ai/prisma/schema.prisma`. Annexes : [clara-ai/README.md](clara-ai/README.md), [archibald/README.md](archibald/README.md).
 
 ---
 
@@ -68,7 +68,7 @@ _Sous Windows (sans WSL) : copier `.env.exemple` en `.env`, puis `docker compose
 
 | Composant      | Rôle                                                                                                                       |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Clara**      | SPA + API (Next.js 14, tRPC, Prisma, NextAuth, MinIO). Chat, auth, modèles personnels, , cron, |
+| **Clara**      | SPA + API (Next.js 14, tRPC, Prisma, NextAuth, MinIO). Chat, auth, modèles personnels, support, cron. |
 | **Archibald**  | API REST (FastAPI) : routes chat par provider/mode, RAG, documents, recherche web. Authentification par `X-API-Key`.       |
 | **PostgreSQL** | Données Clara (Prisma), partagé avec Archibald pour le RAG. Extension **pgvector** requise pour les embeddings.            |
 | **MinIO**      | Stockage S3-compatible (fichiers uploadés, documents).                                                                     |

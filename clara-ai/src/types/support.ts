@@ -28,7 +28,6 @@ export type Provider = {
  * @property llmMaxOutputTokens - Nombre maximum de tokens en sortie
  * @property provider - Identifiant du provider associé
  * @property description - Description détaillée du modèle (optionnel)
- * @property availableSubscriptions - Liste des types d'abonnements ayant accès à ce modèle
  */
 export type LLM = {
   llmId: number;
@@ -42,7 +41,6 @@ export type LLM = {
   llmMaxOutputTokens: number;
   provider: string;
   description?: string;
-  availableSubscriptions: string[];
 };
 
 // ^ ///////////////////////////////////////////////////////////////////////////////SETTING TYPE//////////////////////////////////////////////////////////////////////////////////

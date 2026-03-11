@@ -368,7 +368,7 @@ export default function SetModelModal({
           totalStorageSizeData.totalSizeInMB + fileSizeInMB > storageLimit
         ) {
           toast.error(
-            `Limite de stockage dépassée (${storageLimit}MB). Veuillez supprimer des fichiers ou passer à l'abonnement supérieur.`,
+            `Limite de stockage dépassée (${storageLimit}MB). Veuillez supprimer des fichiers ou augmenter votre limite de stockage.`,
           );
           return;
         }

@@ -1,7 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////IMPORTS//////////////////////////////////////////////////////////////////////////////////////
 import { memo } from "react";
-import { api } from "~/trpc/react";
-import { StorageProgress, CreditsProgress } from "../components/ProgressBars";
 import { useAppSession } from "~/context/SessionContext";
 
 // //////////////////////////////////////////////////////////////////////////////IMPORTS//////////////////////////////////////////////////////////////////////////////////////
@@ -24,11 +22,6 @@ interface User {
   subscriptionInfo?: SubscriptionInfo;
 }
 
-interface ProgressSectionProps {
-  user: User;
-  dailyMessages?: number;
-  storageData?: { totalSizeInMB?: number | undefined };
-}
 // ///////////////////////////////////////////////////////////////////////////////TYPES///////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////FUNCTIONS///////////////////////////////////////////////////////////////////////////////////////
@@ -69,26 +62,16 @@ const UserAvatar = memo(() => (
 ////////////////////////////////////////////////////////////////////////////////TODO USER INFO///////////////////////////////////////////////////////////////////////////////////////
 const UserInfo = memo(({ user }: { user: User }) => {
   const getBadgeInfo = () => {
-    if (user?.role === "admin") {
+    if (user?.role === "admin")
       return { className: "badge-error text-base-100", text: "Admin" };
-    }
-    if (user?.role === "support") {
+    if (user?.role === "support")
       return { className: "badge-warning text-base-100", text: "Support" };
-    }
-    if (user?.subscriptionInfo?.hasSubscription) {
-      const isStoreSubscription =
-        user.subscriptionInfo.canAccessStoreModels &&
-        !user.subscriptionInfo.canCreatePersonalModels;
-      return {
-        className: isStoreSubscription
-          ? "badge-warning text-base-100"
-          : "badge-primary text-base-100",
-        text: user.subscriptionInfo.subscriptionName,
-      };
-    }
     return {
-      className: "badge-success text-base-100",
-      text: formatAccountType(user?.role || "", user?.accountType || ""),
+      className: "badge-primary text-base-100",
+      text:
+        (user?.subscriptionInfo?.subscriptionName ??
+          formatAccountType(user?.role ?? "", user?.accountType ?? "")) ||
+        "Utilisateur",
     };
   };
   //////////////////////////////////////////////////////////////////////////////////TODO END USER INFO///////////////////////////////////////////////////////////////////////////////////////
@@ -114,92 +97,9 @@ const UserInfo = memo(({ user }: { user: User }) => {
   );
 });
 ////////////////////////////////////////////////////////////////////////////////RENDER///////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////TODO PROGRESS SECTION///////////////////////////////////////////////////////////////////////////////////////
-const ProgressSection = memo(
-  ({ user, dailyMessages, storageData }: ProgressSectionProps) => {
-    const isAdminOrSupport = user?.role === "admin" || user?.role === "support";
-    const isStoreSubscription =
-      user?.subscriptionInfo?.hasSubscription &&
-      user.subscriptionInfo.canAccessStoreModels &&
-      !user.subscriptionInfo.canCreatePersonalModels;
-    if (isAdminOrSupport || isStoreSubscription) {
-      return null;
-    }
-    const hasSubscription = user?.subscriptionInfo?.hasSubscription;
-
-    const dailyMessageLimit =
-      hasSubscription && user.subscriptionInfo
-        ? user.subscriptionInfo.dailyMessageLimit
-        : null; // Utiliser null (illimité) au lieu de 20
-    const storageLimitGB =
-      hasSubscription && user.subscriptionInfo
-        ? user.subscriptionInfo.storageLimitGB
-        : null;
-
-    return (
-      <div className="space-y-4 pt-4">
-        {dailyMessageLimit !== null &&
-          dailyMessageLimit > 0 &&
-          dailyMessages !== undefined && (
-            <CreditsProgress dailyMessages={dailyMessages} />
-          )}
-        <StorageProgress
-          totalStorageSize={storageData?.totalSizeInMB}
-          accountType={user?.accountType}
-          storageLimitGB={storageLimitGB}
-        />
-      </div>
-    );
-  },
-);
-////////////////////////////////////////////////////////////////////////////////TODO END PROGRESS SECTION///////////////////////////////////////////////////////////////////////////////////////
-
 ////////////////////////////////////////////////////////////////////////////////TODO USER DATA SECTION///////////////////////////////////////////////////////////////////////////////////////
 const UserDataSection = memo(() => {
   const { user } = useAppSession();
-  const isStoreSubscription =
-    user?.subscriptionInfo?.canAccessStoreModels &&
-    !user?.subscriptionInfo?.canCreatePersonalModels;
-  const isAdminOrSupport = user?.role === "admin" || user?.role === "support";
-  //////////////////////////////////////////////////////////////////////////////////TODO END IS STORE SUBSCRIPTION///////////////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////////TODO HAS LIMITS///////////////////////////////////////////////////////////////////////////////////////
-  const hasLimits = () => {
-    if (isAdminOrSupport || isStoreSubscription) {
-      return false;
-    }
-
-    const hasSubscription = user?.subscriptionInfo?.hasSubscription;
-    const dailyMessageLimit = hasSubscription
-      ? (user.subscriptionInfo?.dailyMessageLimit ?? null)
-      : null;
-    const storageLimitGB = hasSubscription
-      ? (user.subscriptionInfo?.storageLimitGB ?? null)
-      : null;
-
-    return (
-      (dailyMessageLimit !== null && dailyMessageLimit > 0) ||
-      (storageLimitGB !== null && storageLimitGB > 0)
-    );
-  };
-  //////////////////////////////////////////////////////////////////////////////////TODO END HAS LIMITS///////////////////////////////////////////////////////////////////////////////////////
-  const shouldLoadLimits = hasLimits();
-  const { data: storageData } = api.buckets.getTotalStorageSize.useQuery(
-    undefined,
-    {
-      enabled: shouldLoadLimits,
-    },
-  );
-  //////////////////////////////////////////////////////////////////////////////////TODO END STORAGE DATA///////////////////////////////////////////////////////////////////////////////////////
-
-  //////////////////////////////////////////////////////////////////////////////////TODO DAILY MESSAGES///////////////////////////////////////////////////////////////////////////////////////
-  const { data: dailyMessages } = api.user.getDailyMessages.useQuery(
-    undefined,
-    {
-      enabled: shouldLoadLimits,
-    },
-  );
-  //////////////////////////////////////////////////////////////////////////////////TODO END DAILY MESSAGES///////////////////////////////////////////////////////////////////////////////////////
 
   /////////////////////////////////////////////////////////////////////////////////RENDER///////////////////////////////////////////////////////////////////////////////////////
   if (!user) {
@@ -230,33 +130,12 @@ const UserDataSection = memo(() => {
     <section className="relative w-full" aria-label="Informations utilisateur">
       <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/10 via-transparent to-secondary/10  backdrop-blur-sm" />
       <div className="relative rounded-xl border border-white/10 bg-white/5 shadow-lg backdrop-blur-md">
-        {isStoreSubscription || isAdminOrSupport || !hasLimits() ? (
-          <div className="p-3">
-            <div className="flex items-center gap-3">
-              <UserAvatar />
-              <UserInfo user={user} />
-            </div>
+        <div className="p-3">
+          <div className="flex items-center gap-3">
+            <UserAvatar />
+            <UserInfo user={user} />
           </div>
-        ) : (
-          <details className="collapse collapse-arrow w-full">
-            <summary
-              className="collapse-title min-w-full cursor-pointer p-3"
-              aria-label="Afficher les détails de l'utilisation"
-            >
-              <div className="flex items-center gap-3">
-                <UserAvatar />
-                <UserInfo user={user} />
-              </div>
-            </summary>
-            <div className="collapse-content border-t border-white/10">
-              <ProgressSection
-                user={user}
-                dailyMessages={dailyMessages}
-                storageData={storageData}
-              />
-            </div>
-          </details>
-        )}
+        </div>
       </div>
     </section>
   );
@@ -265,7 +144,6 @@ const UserDataSection = memo(() => {
 
 UserAvatar.displayName = "UserAvatar";
 UserInfo.displayName = "UserInfo";
-ProgressSection.displayName = "ProgressSection";
 UserDataSection.displayName = "UserDataSection";
 
 export default UserDataSection;

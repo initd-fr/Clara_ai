@@ -55,7 +55,6 @@ export function LLMSection() {
               llmMaxOutputTokens: llm.llmMaxOutputTokens,
               provider: key,
               description: llm.llmDescription ?? "",
-              availableSubscriptions: llm.availableSubscriptions ?? [],
             }));
           })
         : [],
@@ -101,7 +100,7 @@ export function LLMSection() {
                 Gestion des Modèles LLM
               </h2>
               <p className="text-base-content/70">
-                Configurez et gérez les modèles de langage disponibles
+                Configurez et gérez les modèles de langage
               </p>
             </div>
           </div>
@@ -137,9 +136,11 @@ export function LLMSection() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#25f5ef]/20 to-[#931975]/20">
               <Plus className="h-4 w-4 text-base-content" />
             </div>
-            <h3 className="text-lg font-semibold text-base-content">
-              {selectedLLM ? "Modifier le modèle" : "Ajouter un nouveau modèle"}
-            </h3>
+            <div>
+              <h3 className="text-lg font-semibold text-base-content">
+                {selectedLLM ? "Modifier le modèle" : "Ajouter un nouveau modèle"}
+              </h3>
+            </div>
           </div>
           <MemoizedLLMForm
             providers={providers}
