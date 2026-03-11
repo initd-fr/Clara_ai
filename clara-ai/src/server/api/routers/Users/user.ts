@@ -395,14 +395,6 @@ export const userRouter = createTRPCRouter({
             where: { userId: userId },
           });
 
-          // Supprimer les configs utilisateur
-          console.log(
-            `📋 [DELETE_OWN_ACCOUNT] Suppression des configs utilisateur`,
-          );
-          await tx.userSubscription.deleteMany({
-            where: { userId: userId },
-          });
-
           // Supprimer les tickets de support
           console.log(`🎫 [DELETE_OWN_ACCOUNT] Suppression des tickets`);
           await tx.ticket.deleteMany({
