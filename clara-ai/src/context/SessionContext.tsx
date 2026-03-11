@@ -7,7 +7,6 @@ import {
   useEffect,
   useState,
   useMemo,
-  useCallback,
   memo,
 } from "react";
 import { useSession } from "next-auth/react";
@@ -39,16 +38,12 @@ interface SessionContextType {
   status: "loading" | "authenticated" | "unauthenticated";
   user: UserType | null;
   validAccountTypes: string[];
-  totalStorageLimit: (type: string) => number;
-  dailyMessagesLimit: (type: string) => number;
 }
 
 const SessionContext = createContext<SessionContextType>({
   status: "loading",
   user: null,
   validAccountTypes: [],
-  totalStorageLimit: () => 0,
-  dailyMessagesLimit: () => 0,
 });
 
 const SessionProvider = memo(function SessionProvider({
@@ -72,31 +67,10 @@ const SessionProvider = memo(function SessionProvider({
 
   // ~ ///////////////////////////////////////////////////////////////////////////////EFFECTS/////////////////////////////////////////////////////////////////////////////////////
 
-  const totalStorageLimit = useCallback((): number => {
-    if (subscriptionInfo?.hasSubscription && subscriptionInfo.storageLimitGB) {
-      return subscriptionInfo.storageLimitGB * 1024;
-    }
-    return -1; // illimité
-  }, [subscriptionInfo]);
-
-  const dailyMessagesLimit = useCallback((): number => {
-    if (
-      subscriptionInfo?.hasSubscription &&
-      subscriptionInfo.dailyMessageLimit
-    ) {
-      return subscriptionInfo.dailyMessageLimit;
-    }
-    return -1; // illimité
-  }, [subscriptionInfo]);
-
-  // ~ ///////////////////////////////////////////////////////////////////////////////EFFECTS/////////////////////////////////////////////////////////////////////////////////////
-
   const [contextValue, setContextValue] = useState<SessionContextType>({
     status: "loading",
     user: null,
     validAccountTypes: [],
-    totalStorageLimit,
-    dailyMessagesLimit,
   });
 
   // Mettre à jour le contexte utilisateur
@@ -127,12 +101,8 @@ const SessionProvider = memo(function SessionProvider({
   }, [session, nextAuthStatus, subscriptionInfo]);
 
   const memoizedContextValue = useMemo<SessionContextType>(
-    () => ({
-      ...contextValue,
-      totalStorageLimit,
-      dailyMessagesLimit,
-    }),
-    [contextValue, totalStorageLimit, dailyMessagesLimit],
+    () => ({ ...contextValue }),
+    [contextValue],
   );
 
   return (

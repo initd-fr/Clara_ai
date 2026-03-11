@@ -27,7 +27,9 @@ export default function SupportPage() {
   }, []);
 
   const tabsList = useMemo(() => {
-    const baseTabs: { id: TabType; label: string }[] = [{ id: "llm", label: "LLM" }];
+    const baseTabs: { id: TabType; label: string }[] = [
+      { id: "llm", label: "LLM" },
+    ];
     if (isAdmin) {
       baseTabs.push(
         { id: "providers", label: "Providers" },

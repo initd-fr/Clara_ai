@@ -265,35 +265,34 @@ export const openaiRouter = createTRPCRouter({
 
         // Paralléliser les requêtes DB pour optimiser les performances
         const dbStart = Date.now();
-        const [systemPrompt, { lastExchanges }, user] =
-          await Promise.all([
-            // Récupération du prompt système
-            isAnExpert
-              ? (settingsManager.get(
-                  "LLM_SystemPrompt_Expert",
-                ) as Promise<string>)
-              : (settingsManager.get(
-                  "LLM_SystemPrompt_Agent",
-                ) as Promise<string>),
+        const [systemPrompt, { lastExchanges }, user] = await Promise.all([
+          // Récupération du prompt système
+          isAnExpert
+            ? (settingsManager.get(
+                "LLM_SystemPrompt_Expert",
+              ) as Promise<string>)
+            : (settingsManager.get(
+                "LLM_SystemPrompt_Agent",
+              ) as Promise<string>),
 
-            // Récupération des derniers échanges
-            getLastExchanges(
-              userId,
-              isStoreChat ? storeChatId!.toString() : modelId.toString(),
-              10,
-              isStoreChat,
-            ),
+          // Récupération des derniers échanges
+          getLastExchanges(
+            userId,
+            isStoreChat ? storeChatId!.toString() : modelId.toString(),
+            10,
+            isStoreChat,
+          ),
 
-            // Récupérer les informations utilisateur pour le prompt
-            db.user.findUnique({
-              where: { id: userId },
-              select: {
-                firstName: true,
-                lastName: true,
-                accountType: true,
-              },
-            }),
-          ]);
+          // Récupérer les informations utilisateur pour le prompt
+          db.user.findUnique({
+            where: { id: userId },
+            select: {
+              firstName: true,
+              lastName: true,
+              accountType: true,
+            },
+          }),
+        ]);
         const dbTime = Date.now() - dbStart;
         console.log(`⚡ [PERF] Requêtes DB parallélisées: ${dbTime}ms`);
 
@@ -336,6 +335,9 @@ export const openaiRouter = createTRPCRouter({
           ? question.replace(detectedUrl, "").trim()
           : question;
 
+        const ragThreshold =
+          Number(await settingsManager.get("RAG_SimilarityThreshold")) || 0.85;
+
         const makeApiCall = async (endpoint: string, signal: AbortSignal) => {
           try {
             if (
@@ -346,7 +348,10 @@ export const openaiRouter = createTRPCRouter({
                 !process.env.ARCHIBALD_API_URL && "ARCHIBALD_API_URL",
                 !process.env.ARCHIBALD_API_KEY && "ARCHIBALD_API_KEY",
               ].filter(Boolean);
-              console.error("[ARCHIBALD] Configuration manquante dans .env:", missing.join(", "));
+              console.error(
+                "[ARCHIBALD] Configuration manquante dans .env:",
+                missing.join(", "),
+              );
               throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: "Configuration d'Archibald manquante",
@@ -391,6 +396,7 @@ export const openaiRouter = createTRPCRouter({
                     ),
                     promptVariables,
                     userAccountType: user?.accountType || "",
+                    similarityThreshold: ragThreshold,
                   },
                   {
                     headers: {
@@ -594,7 +600,9 @@ export const openaiRouter = createTRPCRouter({
               } else if (error.response?.status === 500) {
                 console.error(
                   "[ARCHIBALD] 500 — Erreur serveur Archibald:",
-                  error.response?.data ? JSON.stringify(error.response.data) : "(pas de body)",
+                  error.response?.data
+                    ? JSON.stringify(error.response.data)
+                    : "(pas de body)",
                 );
                 clearMessage =
                   "Erreur serveur API - Service temporairement indisponible";
@@ -606,14 +614,19 @@ export const openaiRouter = createTRPCRouter({
                   "[ARCHIBALD] HTTP",
                   error.response.status,
                   "—",
-                  error.response?.data ? JSON.stringify(error.response.data) : error.message,
+                  error.response?.data
+                    ? JSON.stringify(error.response.data)
+                    : error.message,
                 );
                 clearMessage =
                   error.response?.data?.detail?.message ||
                   error.response?.data?.message ||
                   "Erreur de communication avec l'API";
               } else {
-                console.error("[ARCHIBALD] Erreur réseau:", error.code ?? errorMessage);
+                console.error(
+                  "[ARCHIBALD] Erreur réseau:",
+                  error.code ?? errorMessage,
+                );
                 clearMessage = "Erreur de communication avec l'API";
               }
             } else if (error instanceof TRPCError) {

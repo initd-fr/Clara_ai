@@ -324,6 +324,9 @@ export const googleRouter = createTRPCRouter({
           ? question.replace(detectedUrl, "").trim()
           : question;
 
+        const ragThreshold =
+          Number(await settingsManager.get("RAG_SimilarityThreshold")) || 0.85;
+
         const makeApiCall = async (endpoint: string, signal: AbortSignal) => {
           try {
             if (
@@ -362,6 +365,7 @@ export const googleRouter = createTRPCRouter({
                     ),
                     promptVariables,
                     userAccountType: user?.accountType || "",
+                    similarityThreshold: ragThreshold,
                   },
                   {
                     headers: {

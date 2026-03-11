@@ -1,11 +1,16 @@
 "use client";
 ////////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
+import { useMemo } from "react";
 import { api } from "~/trpc/react";
 import { PlaceholdersList } from "../components/PlaceholdersList";
 import { SettingsList } from "../components/SettingsList";
+import { QuickSettingsBlock } from "./QuickSettingsBlock";
 import SecondaryLoader from "~/components/SecondaryLoader";
 import { AlertTriangle, RefreshCw, Settings } from "lucide-react";
 import type { Setting } from "~/types/support";
+
+const QUICK_SETTINGS_KEYS = ["SpeedCreate_DefaultModel", "RAG_SimilarityThreshold"];
+const HIDDEN_SETTINGS_KEYS = ["GeneralSettings_DefaultDailyMsgLimit"];
 ////////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
 
 export function SystemSettingsSection() {
@@ -32,6 +37,26 @@ export function SystemSettingsSection() {
         ]),
       )
     : undefined;
+
+  const allSettings = useMemo(
+    () => (groupedSettings ? Object.values(groupedSettings).flat() : []),
+    [groupedSettings],
+  );
+  const speedCreateValue =
+    allSettings.find((s) => s.key === "SpeedCreate_DefaultModel")?.value ?? "";
+  const ragThresholdValue =
+    allSettings.find((s) => s.key === "RAG_SimilarityThreshold")?.value ?? "0.85";
+
+  const groupedSettingsWithoutQuick = useMemo(() => {
+    if (!groupedSettings) return {};
+    const out: Record<string, Setting[]> = {};
+    const excludeKeys = [...QUICK_SETTINGS_KEYS, ...HIDDEN_SETTINGS_KEYS];
+    for (const [cat, settings] of Object.entries(groupedSettings)) {
+      const filtered = settings.filter((s) => !excludeKeys.includes(s.key));
+      if (filtered.length > 0) out[cat] = filtered;
+    }
+    return out;
+  }, [groupedSettings]);
 
   if (isLoading) {
     return (
@@ -153,9 +178,14 @@ export function SystemSettingsSection() {
         </div>
       </div>
 
+      <QuickSettingsBlock
+        speedCreateValue={speedCreateValue}
+        ragThresholdValue={ragThresholdValue}
+        onRefresh={() => refetch()}
+      />
       <PlaceholdersList />
       <SettingsList
-        groupedSettings={groupedSettings}
+        groupedSettings={groupedSettingsWithoutQuick}
         onRefresh={() => refetch()}
       />
     </div>

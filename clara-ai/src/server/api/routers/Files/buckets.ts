@@ -133,22 +133,8 @@ export const bucketsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx: { session, db } }) => {
-      const { modelId, name, file, size } = input;
+      const { modelId, name, file } = input;
       const userId = session.user.id;
-
-      // Vérification des limites de stockage dynamiques
-      const storageLimit = await AccessControlService.getStorageLimit(userId);
-      if (storageLimit !== null) {
-        const currentStorageSize = input.totalStorageSizeData / (1024 * 1024); // Convertir en GB
-        const newFileSize = size / (1024 * 1024 * 1024); // Convertir en GB
-
-        if (currentStorageSize + newFileSize > storageLimit) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `Vous avez atteint la limite de stockage de ${storageLimit}GB.`,
-          });
-        }
-      }
 
       // Étape 1: Vérification du modèle
       log(LogLevel.DEBUG, `Checking model`);

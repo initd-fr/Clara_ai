@@ -54,6 +54,7 @@ class ChatRequest(BaseModel):
     promptVariables: PromptVariables
     url: Optional[str] = Field(None, max_length=2_000)
     userAccountType: str = Field(..., max_length=50)
+    similarityThreshold: Optional[float] = Field(None, ge=0.0, le=2.0)
 
 
 class ChatResponse(BaseModel):

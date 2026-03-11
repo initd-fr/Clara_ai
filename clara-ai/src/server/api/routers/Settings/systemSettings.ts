@@ -45,12 +45,22 @@ export const settingsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.setting.update({
-        where: { key: input.key },
-        data: {
-          value: input.value,
-        },
-      });
+      const quickKeys = ["SpeedCreate_DefaultModel", "RAG_SimilarityThreshold"];
+      const result = quickKeys.includes(input.key)
+        ? await ctx.db.setting.upsert({
+            where: { key: input.key },
+            update: { value: input.value },
+            create: {
+              key: input.key,
+              value: input.value,
+              isNumber: input.key === "RAG_SimilarityThreshold",
+              toolType: "default",
+            },
+          })
+        : await ctx.db.setting.update({
+            where: { key: input.key },
+            data: { value: input.value },
+          });
       await settingsManager.set(input.key, input.value);
       return result;
     }),

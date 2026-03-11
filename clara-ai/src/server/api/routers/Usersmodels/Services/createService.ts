@@ -217,52 +217,7 @@ export async function createAnExpert(
     done: false,
   });
 
-  // App locale : pas de vérification de config, tout le monde peut créer
-  emitProgress({
-    userId,
-    taskId,
-    type: "create",
-    step: "Vérification des limites de stockage",
-    progress: 10,
-    done: false,
-  });
-
-  const storageLimit = await AccessControlService.getStorageLimit(userId);
-  if (storageLimit !== null) {
-    const totalSize = input.files.reduce((acc, file) => acc + file.size, 0);
-    const totalSizeInGB = totalSize / (1024 * 1024 * 1024);
-
-    const userModels = await ctx.db.models.findMany({
-      where: { userId },
-      select: { bucketName: true },
-    });
-
-    let currentStorageSize = 0;
-    for (const model of userModels) {
-      if (!model.bucketName) continue;
-      const objectsList = getMinio().listObjects(model.bucketName, "", true);
-      for await (const file of objectsList) {
-        currentStorageSize += file.size;
-      }
-    }
-    const currentStorageSizeInGB = currentStorageSize / (1024 * 1024 * 1024);
-
-    if (currentStorageSizeInGB + totalSizeInGB > storageLimit) {
-      emitProgress({
-        userId,
-        taskId,
-        type: "create",
-        step: "Erreur: Limite de stockage dépassée",
-        progress: 0,
-        done: false,
-        error: `Limite de stockage dépassée. Vous avez ${storageLimit}GB de stockage disponible.`,
-      });
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: `Limite de stockage dépassée. Vous avez ${storageLimit}GB de stockage disponible.`,
-      });
-    }
-  }
+  // App locale : pas de vérification de config ni de limites de stockage
 
   emitProgress({
     userId,

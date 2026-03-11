@@ -330,6 +330,9 @@ export const anthropicRouter = createTRPCRouter({
           ? question.replace(detectedUrl, "").trim()
           : question;
 
+        const ragThreshold =
+          Number(await settingsManager.get("RAG_SimilarityThreshold")) || 0.85;
+
         const makeApiCall = async (endpoint: string, signal: AbortSignal) => {
           try {
             if (
@@ -368,6 +371,7 @@ export const anthropicRouter = createTRPCRouter({
                     ),
                     promptVariables,
                     userAccountType: user?.accountType || "",
+                    similarityThreshold: ragThreshold,
                   },
                   {
                     headers: {

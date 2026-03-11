@@ -11,6 +11,7 @@ import type {
 } from "openai/resources/chat/completions";
 import createAnAgent, { createAnExpert } from "./Services/createService";
 import { emitProgress } from "~/server/shared/progressBridge";
+import { settingsManager } from "~/server/api/routers/Settings/settingsManager";
 import type { Session } from "next-auth";
 
 let _openai: OpenAI | null = null;
@@ -79,29 +80,45 @@ export const speedCreateRouter = createTRPCRouter({
 
         // 🔥 Sélectionner le modèle accessible à l'utilisateur pour le speed create
         let speedCreateModel: string | null = null;
+        const settingDefault = await settingsManager.get<string>(
+          "SpeedCreate_DefaultModel",
+        );
 
-        // Chercher d'abord un modèle par défaut accessible à l'utilisateur
-        for (const provider of providerData) {
-          const defaultModel = provider.models.find((model) => {
-            // Vérifier si ce modèle est marqué comme défaut en DB
-            const originalProvider = providers.find(
-              (p) => p.value === provider.value,
-            );
-            return originalProvider?.llms?.find(
-              (llm) => llm.isDefault && llm.value === model.llmValue,
-            );
-          });
-
-          if (defaultModel) {
-            speedCreateModel = defaultModel.llmValue;
+        // Priorité 1 : paramètre Support > Paramètres (Modèle par défaut Speed Create)
+        if (settingDefault && typeof settingDefault === "string") {
+          const found = providerData.find((p) =>
+            p.models.some((m) => m.llmValue === settingDefault),
+          );
+          if (found) {
+            speedCreateModel = settingDefault;
             console.log(
-              `✅ Using user's accessible default model: ${speedCreateModel}`,
+              `✅ Using Speed Create default from settings: ${speedCreateModel}`,
             );
-            break;
           }
         }
 
-        // Si aucun modèle par défaut accessible, prendre le premier modèle accessible
+        // Priorité 2 : modèle marqué isDefault en DB
+        if (!speedCreateModel) {
+          for (const provider of providerData) {
+            const defaultModel = provider.models.find((model) => {
+              const originalProvider = providers.find(
+                (p) => p.value === provider.value,
+              );
+              return originalProvider?.llms?.find(
+                (llm) => llm.isDefault && llm.value === model.llmValue,
+              );
+            });
+            if (defaultModel) {
+              speedCreateModel = defaultModel.llmValue;
+              console.log(
+                `✅ Using user's accessible default model: ${speedCreateModel}`,
+              );
+              break;
+            }
+          }
+        }
+
+        // Priorité 3 : premier modèle accessible
         if (!speedCreateModel && providerData.length > 0) {
           speedCreateModel = providerData[0]?.models[0]?.llmValue || null;
           console.log(`✅ Using first accessible model: ${speedCreateModel}`);
@@ -560,29 +577,42 @@ Une fois la demande comprise :
 
         // 🔥 Sélectionner le modèle accessible à l'utilisateur pour le speed create (configureExpert)
         let speedCreateModel: string | null = null;
+        const settingDefaultExpert = await settingsManager.get<string>(
+          "SpeedCreate_DefaultModel",
+        );
 
-        // Chercher d'abord un modèle par défaut accessible à l'utilisateur
-        for (const provider of providerData) {
-          const defaultModel = provider.models.find((model) => {
-            // Vérifier si ce modèle est marqué comme défaut en DB
-            const originalProvider = providers.find(
-              (p) => p.value === provider.value,
-            );
-            return originalProvider?.llms?.find(
-              (llm) => llm.isDefault && llm.value === model.llmValue,
-            );
-          });
-
-          if (defaultModel) {
-            speedCreateModel = defaultModel.llmValue;
+        if (settingDefaultExpert && typeof settingDefaultExpert === "string") {
+          const found = providerData.find((p) =>
+            p.models.some((m) => m.llmValue === settingDefaultExpert),
+          );
+          if (found) {
+            speedCreateModel = settingDefaultExpert;
             console.log(
-              `✅ Using user's accessible default model (configureExpert): ${speedCreateModel}`,
+              `✅ Using Speed Create default from settings (configureExpert): ${speedCreateModel}`,
             );
-            break;
           }
         }
 
-        // Si aucun modèle par défaut accessible, prendre le premier modèle accessible
+        if (!speedCreateModel) {
+          for (const provider of providerData) {
+            const defaultModel = provider.models.find((model) => {
+              const originalProvider = providers.find(
+                (p) => p.value === provider.value,
+              );
+              return originalProvider?.llms?.find(
+                (llm) => llm.isDefault && llm.value === model.llmValue,
+              );
+            });
+            if (defaultModel) {
+              speedCreateModel = defaultModel.llmValue;
+              console.log(
+                `✅ Using user's accessible default model (configureExpert): ${speedCreateModel}`,
+              );
+              break;
+            }
+          }
+        }
+
         if (!speedCreateModel && providerData.length > 0) {
           speedCreateModel = providerData[0]?.models[0]?.llmValue || null;
           console.log(

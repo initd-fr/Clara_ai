@@ -268,6 +268,9 @@ export const mistralRouter = createTRPCRouter({
           ? question.replace(detectedUrl, "").trim()
           : question;
 
+        const ragThreshold =
+          Number(await settingsManager.get("RAG_SimilarityThreshold")) || 0.85;
+
         try {
           if (
             !process.env.ARCHIBALD_API_URL ||
@@ -304,6 +307,7 @@ export const mistralRouter = createTRPCRouter({
                   ),
                   promptVariables,
                   userAccountType: user?.accountType || "",
+                  similarityThreshold: ragThreshold,
                 },
                 {
                   headers: {

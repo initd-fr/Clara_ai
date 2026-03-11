@@ -306,13 +306,6 @@ export default function SetModelModal({
   const [taskId] = useState<string | null>(null);
   const { user } = useAppSession();
 
-  const { data: totalStorageSizeData } =
-    api.buckets.getTotalStorageSize.useQuery(undefined, {
-      enabled: user?.role !== "admin" && user?.role !== "support",
-    });
-  const { totalStorageLimit } = useAppSession();
-  const storageLimit = totalStorageLimit(user?.accountType ?? "free");
-
   const { data: modelsData } = api.availableModels.getFiltred.useQuery();
   const utils = api.useContext();
 
@@ -361,19 +354,7 @@ export default function SetModelModal({
     },
     onDrop: (acceptedFiles) => {
       const file = acceptedFiles[0];
-      if (file) {
-        const fileSizeInMB = file.size / (1024 * 1024);
-        if (
-          totalStorageSizeData &&
-          totalStorageSizeData.totalSizeInMB + fileSizeInMB > storageLimit
-        ) {
-          toast.error(
-            `Limite de stockage dépassée (${storageLimit}MB). Veuillez supprimer des fichiers ou augmenter votre limite de stockage.`,
-          );
-          return;
-        }
-        setFiles(acceptedFiles.slice(0, 1));
-      }
+      if (file) setFiles(acceptedFiles.slice(0, 1));
     },
     disabled: mode !== "expert",
     maxFiles: 1,

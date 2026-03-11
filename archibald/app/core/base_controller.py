@@ -7,13 +7,6 @@ import time
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import JSONResponse
-from langchain_core.documents import Document
-from langchain_core.vectorstores import VectorStore
-from langchain_openai import OpenAIEmbeddings
-from PIL import Image
-
 from app.core.cache_manager import cache_manager
 from app.core.config import settings
 from app.core.logging_config import get_logger
@@ -22,6 +15,12 @@ from app.db.models_sqlalchemy import iaLlm
 from app.Types.types import ChatRequest, ChatResponse
 from app.utils.token_allocator import TokenAllocator
 from app.utils.web_search.base_search import base_search, read_url_content
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
+from langchain_core.documents import Document
+from langchain_core.vectorstores import VectorStore
+from langchain_openai import OpenAIEmbeddings
+from PIL import Image
 
 
 class CustomPGVectorStore(VectorStore):
@@ -270,10 +269,17 @@ class CustomPGVectorStore(VectorStore):
 
 
 class _NoOpLogger:
-    def info(self, *args, **kwargs): pass
-    def error(self, *args, **kwargs): pass
-    def warning(self, *args, **kwargs): pass
-    def debug(self, *args, **kwargs): pass
+    def info(self, *args, **kwargs):
+        pass
+
+    def error(self, *args, **kwargs):
+        pass
+
+    def warning(self, *args, **kwargs):
+        pass
+
+    def debug(self, *args, **kwargs):
+        pass
 
 
 class BaseChatController(ABC):
@@ -472,6 +478,7 @@ class BaseChatController(ABC):
         model_name: str = None,
         max_tokens: int = 1024,
         provider: str = "openai",
+        threshold_distance: Optional[float] = None,
     ) -> List[Dict[str, Any]]:
         """Recherche des documents similaires avec cache et LangChain PGVector"""
         rag_total_start = time.time()
@@ -528,8 +535,9 @@ class BaseChatController(ABC):
                 distances,
             )
 
-            # Filtrer par seuil de distance. Seuil 0.85 = plus permissif (0.5 était trop strict, les meilleurs matches étaient écartés).
-            threshold_distance = 0.85
+            # Filtrer par seuil de distance (configurable depuis Support > Paramètres).
+            if threshold_distance is None:
+                threshold_distance = 0.85
             before_filter = len(docs_with_scores)
             docs_filtered = [
                 (doc, score)
@@ -604,7 +612,12 @@ class BaseChatController(ABC):
                     len(text_content),
                 )
                 self.logger.debug(
-                    "  aperçu: %s", (text_content[:200] + "..." if len(text_content) > 200 else text_content)
+                    "  aperçu: %s",
+                    (
+                        text_content[:200] + "..."
+                        if len(text_content) > 200
+                        else text_content
+                    ),
                 )
 
             build_ms = round((time.time() - build_start) * 1000, 2)
@@ -621,7 +634,10 @@ class BaseChatController(ABC):
                 rag_total_ms,
             )
             if not settings.is_production and rag_context:
-                self.logger.info("[RAG] Aperçu contexte (500 car): %s", rag_context[:500] + ("..." if len(rag_context) > 500 else ""))
+                self.logger.info(
+                    "[RAG] Aperçu contexte (500 car): %s",
+                    rag_context[:500] + ("..." if len(rag_context) > 500 else ""),
+                )
 
             # Mettre en cache
             cache_manager.set_similar_documents(question, model_id, limit, similar_docs)
@@ -981,6 +997,11 @@ class BaseChatController(ABC):
                 question=request.question,
                 model_id=request.modelId,
                 provider=request.provider,
+                threshold_distance=(
+                    float(request.similarityThreshold)
+                    if request.similarityThreshold is not None
+                    else None
+                ),
             )
 
             self.logger.info(

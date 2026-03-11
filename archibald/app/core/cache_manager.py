@@ -2,9 +2,8 @@ import hashlib
 import json
 from typing import Any, Dict, List, Optional
 
-from cachetools import TTLCache
-
 from app.core.config import settings
+from cachetools import TTLCache
 
 
 class CacheManager:

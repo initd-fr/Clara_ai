@@ -85,13 +85,6 @@ export default function SpeedCreateModal({
   const { user } = useAppSession();
   const userId = user?.id;
 
-  // Charger le stockage seulement si l'utilisateur a des limites et que la modal est ouverte
-  const { data: totalStorageSizeData } =
-    api.buckets.getTotalStorageSize.useQuery(undefined, {
-      enabled: user?.role !== "admin" && user?.role !== "support" && isOpen, // Pas de limites pour admin/support
-    });
-  const { totalStorageLimit } = useAppSession();
-
   const { isOpen: isSidebarOpen } = useSidebar();
   const utils = api.useContext();
 
@@ -433,23 +426,7 @@ export default function SpeedCreateModal({
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (acceptedFiles) => {
       const file = acceptedFiles[0];
-      if (file) {
-        // Vérification du quota
-        const fileSizeInMB = file.size / (1024 * 1024);
-        if (
-          totalStorageSizeData &&
-          totalStorageSizeData.totalSizeInMB + fileSizeInMB >
-            totalStorageLimit((user as UserType)?.accountType ?? "free")
-        ) {
-          toast.error(
-            `Limite de stockage dépassée (${totalStorageLimit(
-              (user as UserType)?.accountType ?? "free",
-            )}MB). Veuillez supprimer des fichiers ou augmenter votre limite de stockage.`,
-          );
-          return;
-        }
-        setUploadedFile(file);
-      }
+      if (file) setUploadedFile(file);
     },
     accept: {
       "application/pdf": [".pdf"],
