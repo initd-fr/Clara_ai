@@ -7,8 +7,6 @@ import { SystemSettingsSection } from "./elements/SystemSettingsSection";
 import { Tabs } from "./components/Tabs";
 import BackupRestore from "./elements/BackupRestore";
 import ProviderManagement from "./elements/ProviderManagement";
-import { useAppSession } from "~/context/SessionContext";
-
 ////////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////TYPES///////////////////////////////////////////////////////////////////////////////////////
@@ -18,27 +16,21 @@ type TabType = "llm" | "settings" | "backup" | "providers";
 ////////////////////////////////////////////////////////////////////////////////FUNCTIONS///////////////////////////////////////////////////////////////////////////////////////
 export default function SupportPage() {
   ///////////////////////////////////////////////////////////////////////////////HOOKS///////////////////////////////////////////////////////////////////////////////////////
-  const { user } = useAppSession();
-  const isAdmin = user?.role === "admin";
   const [activeTab, setActiveTab] = useState<TabType>("llm");
 
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab as TabType);
   }, []);
 
-  const tabsList = useMemo(() => {
-    const baseTabs: { id: TabType; label: string }[] = [
-      { id: "llm", label: "LLM" },
-    ];
-    if (isAdmin) {
-      baseTabs.push(
-        { id: "providers", label: "Providers" },
-        { id: "settings", label: "Paramètres" },
-        { id: "backup", label: "Database" },
-      );
-    }
-    return baseTabs;
-  }, [isAdmin]);
+  const tabsList = useMemo(
+    () => [
+      { id: "llm" as TabType, label: "LLM" },
+      { id: "providers" as TabType, label: "Providers" },
+      { id: "settings" as TabType, label: "Paramètres" },
+      { id: "backup" as TabType, label: "Database" },
+    ],
+    [],
+  );
 
   useEffect(() => {
     const validTabIds = tabsList.map((tab) => tab.id);
@@ -52,15 +44,15 @@ export default function SupportPage() {
       case "llm":
         return <LLMSection />;
       case "providers":
-        return isAdmin ? <ProviderManagement /> : null;
+        return <ProviderManagement />;
       case "settings":
-        return isAdmin ? <SystemSettingsSection /> : null;
+        return <SystemSettingsSection />;
       case "backup":
-        return isAdmin ? <BackupRestore /> : null;
+        return <BackupRestore />;
       default:
         return null;
     }
-  }, [activeTab, isAdmin]);
+  }, [activeTab]);
   ///////////////////////////////////////////////////////////////////////////////HOOKS///////////////////////////////////////////////////////////////////////////////////////
 
   ///////////////////////////////////////////////////////////////////////////////RENDER///////////////////////////////////////////////////////////////////////////////////////

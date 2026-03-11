@@ -218,22 +218,18 @@ export const Dock = memo(({ className }: DockProps) => {
         label: "Paramètres",
         onClick: handleSettingsClick,
       },
-      ...(user?.role === "support" || user?.role === "admin"
-        ? [
-            {
-              icon: <HeadphonesIcon className="h-6 w-6" />,
-              label: "Support",
-              onClick: handleSupportClick,
-            },
-          ]
-        : []),
+      {
+        icon: <HeadphonesIcon className="h-6 w-6" />,
+        label: "Support",
+        onClick: handleSupportClick,
+      },
       {
         icon: <LogOutIcon className="h-6 w-6" />,
         label: "Déconnexion",
         onClick: handleLogout,
       },
     ],
-    [user?.role, handleSettingsClick, handleSupportClick, handleLogout],
+    [handleSettingsClick, handleSupportClick, handleLogout],
   );
   /////////////////////////////////////////////////////////////////////////////////HOOKS///////////////////////////////////////////////////////////////////////////////////////
 

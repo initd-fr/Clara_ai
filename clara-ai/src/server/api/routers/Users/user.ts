@@ -5,75 +5,10 @@ import { hash } from "bcryptjs";
 import {
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
 } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
 export const userRouter = createTRPCRouter({
-  //& Inscription publique
-  register: publicProcedure
-    .input(
-      z.object({
-        email: z.string().email().max(128),
-        password: z.string().max(40),
-        firstName: z.string(),
-        lastName: z.string(),
-        accountType: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx: { db }, input }) => {
-      const { email, password, firstName, lastName, accountType } = input;
-
-      // Vérifier si l'utilisateur existe déjà
-      const existingUser = await db.user.findUnique({
-        where: { email },
-      });
-
-      if (existingUser) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Un utilisateur avec cet email existe déjà",
-        });
-      }
-
-      // Hash du mot de passe
-      const hashedPassword = await hash(password, 12);
-
-      // Créer l'utilisateur (app locale : pas de config / abonnement)
-      const newUser = await db.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          firstName,
-          lastName,
-          accountType: accountType ?? "user",
-          role: "user",
-        },
-      });
-
-      // Créer le log d'inscription
-      await db.userLogs.create({
-        data: {
-          userId: newUser.id,
-          action: "CREATE_ACCOUNT",
-          firstName,
-          lastName,
-          email,
-          description: "Création du compte via inscription manuelle",
-        },
-      });
-
-      return {
-        message: "Compte créé avec succès",
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-        },
-      };
-    }),
-
   //& Recupérer l'utilisateur courant
   getCurrentUser: protectedProcedure.query(async ({ ctx }) => {
     // Correction TS : accès sécurisé à user

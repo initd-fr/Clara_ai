@@ -97,15 +97,8 @@ const rateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
     "user" in ctx.session
       ? (ctx.session as any).user
       : undefined;
-  const role = sessionUser?.role || "user";
-
-  // Nouvelle logique : déterminer le limiter basé sur les permissions réelles
-  let limiter = limiters.default; // Limiter par défaut
-
-  if (role === "support" || role === "admin") {
-    limiter = limiters.support;
-  }
   // App locale : un seul limiter pour tous les utilisateurs
+  const limiter = limiters.default;
 
   try {
     // Ajouter la requête à la file d'attente

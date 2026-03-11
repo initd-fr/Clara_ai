@@ -10,15 +10,14 @@ interface AuthLayoutProps {
 
 ////////////////////////////////////////////////////////////////////////////////CONSTANTS///////////////////////////////////////////////////////////////////////////////////////
 export const metadata: Metadata = {
-  title: "Clara AI - Connexion & Inscription",
+  title: "Clara AI - Connexion",
   description:
-    "Connectez-vous ou créez votre compte Clara AI pour accéder à l&apos;intelligence artificielle avancée",
+    "Connectez-vous à Clara AI pour accéder à l&apos;intelligence artificielle avancée",
   keywords: [
     "Clara AI",
     "IA",
     "intelligence artificielle",
     "connexion",
-    "inscription",
     "authentification",
   ],
   authors: [{ name: "Clara AI Team" }],
@@ -42,9 +41,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
     url: "/auth",
-    title: "Clara AI - Connexion & Inscription",
+    title: "Clara AI - Connexion",
     description:
-      "Connectez-vous ou créez votre compte Clara AI pour accéder à l&apos;intelligence artificielle avancée",
+      "Connectez-vous à Clara AI pour accéder à l&apos;intelligence artificielle avancée",
     siteName: "Clara AI",
     images: [
       {
@@ -57,9 +56,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Clara AI - Connexion & Inscription",
+    title: "Clara AI - Connexion",
     description:
-      "Connectez-vous ou créez votre compte Clara AI pour accéder à l&apos;intelligence artificielle avancée",
+      "Connectez-vous à Clara AI pour accéder à l&apos;intelligence artificielle avancée",
     images: ["/img/BannerLight.png"],
   },
   icons: {

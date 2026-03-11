@@ -1,7 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { getServerSession } from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
 import { compare } from "bcryptjs";
 import { randomBytes } from "node:crypto";
 import { db } from "~/server/db";
@@ -95,138 +94,6 @@ export const authOptions: any = {
       const existingUser = await db.user.findUnique({
         where: { email: user.email },
       });
-
-      const profileFirstName = (profile as any)?.given_name || "";
-      const profileLastName = (profile as any)?.family_name || "";
-
-      if (account?.provider === "google") {
-        try {
-          // Vérifier si l'utilisateur existe déjà
-          const dbUser = await db.user.findUnique({
-            where: { email: user.email },
-          });
-
-          if (!dbUser) {
-            // Créer un nouvel utilisateur
-            const newUser = await db.user.create({
-              data: {
-                email: user.email,
-                firstName: profileFirstName,
-                lastName: profileLastName,
-                role: "user",
-                accountType: "free",
-                password: "", // Pas de mot de passe pour les comptes Google
-              },
-            });
-
-            // Créer le compte Google
-            await db.account.create({
-              data: {
-                userId: newUser.id,
-                type: account.type,
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-                refresh_token: account.refresh_token,
-                access_token: account.access_token,
-                expires_at: account.expires_at,
-                token_type: account.token_type,
-                scope: account.scope,
-                id_token: account.id_token,
-                session_state: account.session_state,
-              },
-            });
-
-            // Générer un token de session pour le nouvel utilisateur
-            const newSessionToken = randomBytes(32).toString("hex");
-            await db.user.update({
-              where: { id: newUser.id },
-              data: {
-                sessionToken: newSessionToken,
-                isOnline: true,
-                lastConnection: new Date(),
-              },
-            });
-
-            // Log de la création du compte
-            await db.userLogs.create({
-              data: {
-                userId: newUser.id,
-                action: "CREATE_ACCOUNT",
-                firstName: profileFirstName,
-                lastName: profileLastName,
-                email: user.email,
-                description: "Création du compte via Google",
-              },
-            });
-
-            // Mettre à jour l'utilisateur dans le token
-            user.id = newUser.id;
-            user.sessionToken = newSessionToken;
-
-            return true;
-          } else {
-            // Vérifier si le compte Google existe déjà
-            const existingAccount = await db.account.findFirst({
-              where: {
-                userId: dbUser.id,
-                provider: "google",
-              },
-            });
-
-            if (!existingAccount) {
-              // Lier le compte Google à l'utilisateur existant
-              await db.account.create({
-                data: {
-                  userId: dbUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  refresh_token: account.refresh_token,
-                  access_token: account.access_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                  session_state: account.session_state,
-                },
-              });
-            }
-
-            // Générer un nouveau token de session
-            const newSessionToken = randomBytes(32).toString("hex");
-            await db.user.update({
-              where: { id: dbUser.id },
-              data: {
-                sessionToken: newSessionToken,
-                previousToken: dbUser.sessionToken,
-                isOnline: true,
-                lastConnection: new Date(),
-              },
-            });
-
-            // Log de la connexion
-            await db.userLogs.create({
-              data: {
-                userId: dbUser.id,
-                action: "LOGIN",
-                firstName: dbUser.firstName,
-                lastName: dbUser.lastName,
-                email: dbUser.email,
-                description: "Connexion via Google",
-              },
-            });
-
-            // Mettre à jour l'utilisateur dans le token
-            user.id = dbUser.id;
-            user.sessionToken = newSessionToken;
-          }
-
-          return true;
-        } catch (error) {
-          console.error("Erreur lors de la connexion Google:", error);
-          return false;
-        }
-      }
 
       // Réinitialiser les messages journaliers à la connexion si nécessaire
       if (existingUser) {
@@ -357,10 +224,6 @@ export const authOptions: any = {
           lastName: user.lastName,
         };
       },
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
 };

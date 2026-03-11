@@ -1,7 +1,6 @@
 "use client";
 // ~ ///////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
 import { memo } from "react";
-import Image from "next/image";
 // ~ ///////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
 
 // ~ ///////////////////////////////////////////////////////////////////////////////TYPES///////////////////////////////////////////////////////////////////////////////////////
@@ -15,7 +14,6 @@ interface LoginFormProps {
   onPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
   onSubmit: (e: React.FormEvent) => void;
-  onGoogleSignIn: () => void;
 }
 // ~ ///////////////////////////////////////////////////////////////////////////////TYPES///////////////////////////////////////////////////////////////////////////////////////
 
@@ -30,7 +28,6 @@ const LoginForm = memo(
     onPasswordChange,
     onTogglePassword,
     onSubmit,
-    onGoogleSignIn,
   }: LoginFormProps) => {
     // ~ ///////////////////////////////////////////////////////////////////////////////RENDER///////////////////////////////////////////////////////////////////////////////////////
     return (
@@ -120,37 +117,6 @@ const LoginForm = memo(
             ) : (
               "Se connecter"
             )}
-          </button>
-        </div>
-
-        <div className="flex-1 space-y-6 sm:space-y-8">
-          <div className="relative">
-            <div className="flex items-center justify-center gap-4">
-              <div className="h-[1px] w-full bg-base-content/10"></div>
-              <div className="text-base-content/60">ou</div>
-              <div className="h-[1px] w-full bg-base-content/10"></div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onGoogleSignIn}
-            className={`btn h-12 w-full rounded-xl bg-base-100/90 font-medium shadow-sm transition-all duration-200 hover:bg-base-100/70 hover:shadow-lg hover:shadow-base-content/5 sm:h-14 ${
-              isDark
-                ? ""
-                : "border border-base-content/5 bg-base-300/35 hover:bg-base-300/55"
-            }`}
-            aria-label="Continuer avec Google"
-          >
-            <Image
-              src="/icons/google.svg"
-              alt="Logo Google"
-              width={20}
-              height={20}
-              className="mr-2"
-              unoptimized={true}
-            />
-            Continuer avec Google
           </button>
         </div>
       </form>

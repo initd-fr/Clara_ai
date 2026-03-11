@@ -5,7 +5,6 @@ import { api } from "~/trpc/react";
 import { LLMForm } from "../components/LLMForm";
 import { LLMTable } from "../components/LLMTable";
 import type { Provider, LLM } from "~/types/support";
-import { useAppSession } from "~/context/SessionContext";
 import { Brain, Plus } from "lucide-react";
 /////////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
 
@@ -19,8 +18,7 @@ MemoizedLLMTable.displayName = "MemoizedLLMTable";
 export function LLMSection() {
   const [selectedLLM, setSelectedLLM] = useState<LLM | null>(null);
   const { data: modelsData, refetch } = api.availableModels.getAll.useQuery();
-  const { user } = useAppSession();
-  const canManageLLMs = user?.role === "admin" || user?.role === "support";
+  const canManageLLMs = true;
 
   const providers: Provider[] = useMemo(
     () =>

@@ -80,11 +80,7 @@ export const adminModelsRouter = createTRPCRouter({
   // Créer un nouveau LLM
   create: protectedProcedure
     .input(createLlmSchema)
-    .mutation(async ({ ctx: { db, session }, input }) => {
-      if (session.user.role !== "admin" && session.user.role !== "support") {
-        throw new Error("Vous n'avez pas les permissions pour créer un LLM");
-      }
-
+    .mutation(async ({ ctx: { db }, input }) => {
       return await db.$transaction(async (tx) => {
         // Si on définit ce LLM comme par défaut, désactiver tous les autres
         if (input.isDefault) {
@@ -107,11 +103,7 @@ export const adminModelsRouter = createTRPCRouter({
   // Editer un LLM
   update: protectedProcedure
     .input(updateLlmSchema)
-    .mutation(async ({ ctx: { db, session }, input }) => {
-      if (session.user.role !== "admin" && session.user.role !== "support") {
-        throw new Error("Vous n'avez pas les permissions pour modifier un LLM");
-      }
-
+    .mutation(async ({ ctx: { db }, input }) => {
       const { id, value, ...data } = input;
 
       // Vérifier si le LLM existe
@@ -174,12 +166,7 @@ export const adminModelsRouter = createTRPCRouter({
   // Activer ou désactiver un LLM
   toggleEnable: protectedProcedure
     .input(toggleEnableSchema)
-    .mutation(async ({ ctx: { db, session }, input }) => {
-      if (session.user.role !== "admin" && session.user.role !== "support") {
-        throw new Error(
-          "Vous n'avez pas les permissions pour activer ou désactiver un LLM",
-        );
-      }
+    .mutation(async ({ ctx: { db }, input }) => {
       return db.iaLlm.update({
         where: { id: input.id },
         data: { enabled: input.enabled },
@@ -189,13 +176,7 @@ export const adminModelsRouter = createTRPCRouter({
   // Supprimer un LLM
   delete: protectedProcedure
     .input(deleteLlmSchema)
-    .mutation(async ({ ctx: { db, session }, input }) => {
-      if (session.user.role !== "admin") {
-        throw new Error(
-          "Vous n'avez pas les permissions pour supprimer un LLM",
-        );
-      }
-
+    .mutation(async ({ ctx: { db }, input }) => {
       const llm = await db.iaLlm.findUnique({
         where: { id: input.id },
         include: {
@@ -256,13 +237,7 @@ export const adminModelsRouter = createTRPCRouter({
   // Définir un LLM comme par défaut
   setDefault: protectedProcedure
     .input(setDefaultLlmSchema)
-    .mutation(async ({ ctx: { db, session }, input }) => {
-      if (session.user.role !== "admin") {
-        throw new Error(
-          "Vous n'avez pas les permissions pour définir un LLM par défaut",
-        );
-      }
-
+    .mutation(async ({ ctx: { db }, input }) => {
       const llm = await db.iaLlm.findUnique({
         where: { id: input.id },
         select: { id: true, label: true, enabled: true },

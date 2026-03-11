@@ -133,8 +133,8 @@ export const LLMTable = memo(
       llmId: null,
     });
     const { user } = useAppSession();
-    const isAdmin = user?.role === "admin";
-    const canManageLLMs = user?.role === "admin" || user?.role === "support";
+    const isAdmin = true;
+    const canManageLLMs = true;
 
     const toggleLLM = api.adminModels.toggleEnable.useMutation();
     const deleteLLM = api.adminModels.delete.useMutation();

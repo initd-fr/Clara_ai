@@ -9,9 +9,11 @@ import {
   EllipsisVertical,
   FileText,
   Upload,
-  // ChevronDown, // Non utilisé
   MoreVertical,
   MessageCircleOff,
+  Settings,
+  Server,
+  Target,
 } from "lucide-react";
 import Image from "next/image";
 // ~  ///////////////////////////////////////////////////////////////////////////////IMPORTS///////////////////////////////////////////////////////////////////////////////////////
@@ -26,6 +28,7 @@ export default function DocumentationPage() {
       { id: "models", title: "" },
       { id: "files", title: "" },
       { id: "best_practices", title: "" },
+      { id: "support_admin", title: "" },
       { id: "support", title: "" },
     ],
     [],
@@ -89,6 +92,8 @@ function getSectionTitle(id: string) {
       return "🔬 Roadmap Clara AI";
     case "best_practices":
       return "💡 Bonnes Pratiques";
+    case "support_admin":
+      return "⚙️ Support & Paramètres (admin)";
     case "support":
       return "🤝 Support & Assistance";
     default:
@@ -681,6 +686,192 @@ function getContent(id: string) {
                 Avec Clara, vous pouvez exploiter ces subtilités selon le modèle
                 utilisé, pour obtenir des réponses plus claires, mieux formatées
                 et vraiment adaptées à vos besoins.
+              </p>
+            </div>
+          </div>
+          <Separator />
+        </>
+      );
+
+    case "support_admin":
+      return (
+        <>
+          <div className="space-y-8">
+            <p className="text-xl font-normal">
+              La page <strong>Support</strong> permet de configurer les
+              fournisseurs IA, les modèles LLM et les paramètres système. Elle
+              est accessible depuis le menu à tous les utilisateurs. Les onglets
+              disponibles sont : <strong>LLM</strong>,{" "}
+              <strong>Providers</strong>, <strong>Paramètres</strong> et{" "}
+              <strong>Database</strong>.
+            </p>
+
+            {/* Onglet LLM */}
+            <div className="rounded-xl border border-base-300/50 bg-base-200/50 p-6 shadow-lg backdrop-blur-xl">
+              <div className="flex items-start gap-4">
+                <div className="rounded-2xl bg-gradient-to-r from-primary/20 to-primary/10 p-4 shadow-md ring-1 ring-primary/20">
+                  <Brain className="h-10 w-10 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="mb-3 text-xl font-semibold text-primary">
+                    Onglet LLM — Gestion des modèles
+                  </h4>
+                  <p className="mb-4 text-base-content/80">
+                    Cet onglet liste tous les modèles de langage (OpenAI, Anthropic,
+                    Mistral, Google, etc.) et permet de les gérer.
+                  </p>
+                  <ul className="ml-6 list-disc space-y-2 text-base-content/80">
+                    <li>
+                      <strong>Ajouter un modèle :</strong> remplir le formulaire
+                      en haut (fournisseur, identifiant technique, libellé,
+                      tokens, etc.) puis enregistrer. Seuls les providers
+                      activés dans l’onglet Providers apparaissent.
+                    </li>
+                    <li>
+                      <strong>Modifier un modèle :</strong> chaque modèle
+                      créé est affiché sous forme de carte. Cliquer sur le
+                      bouton <strong>Modifier</strong> de la carte pour ouvrir
+                      le formulaire, modifier les champs puis enregistrer.
+                    </li>
+                    <li>
+                      <strong>Activer / Désactiver :</strong> utiliser le
+                      bouton prévu dans le tableau pour activer ou désactiver un
+                      modèle sans le supprimer.
+                    </li>
+                    <li>
+                      <strong>Modèle par défaut :</strong> vous pouvez marquer
+                      un modèle comme « par défaut » (icône étoile) ; il sera
+                      proposé en priorité dans l’app.
+                    </li>
+                    <li>
+                      <strong>Supprimer :</strong> supprimer définitivement un
+                      modèle du catalogue. Action irréversible.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Onglet Providers */}
+            <div className="rounded-xl border border-base-300/50 bg-base-200/50 p-6 shadow-lg backdrop-blur-xl">
+              <div className="flex items-start gap-4">
+                <div className="rounded-2xl bg-gradient-to-r from-secondary/20 to-secondary/10 p-4 shadow-md ring-1 ring-secondary/20">
+                  <Server className="h-10 w-10 text-secondary" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="mb-3 text-xl font-semibold text-secondary">
+                    Onglet Providers — Fournisseurs IA
+                  </h4>
+                  <p className="mb-4 text-base-content/80">
+                    Les providers (OpenAI, Anthropic, Mistral, Google, etc.)
+                    regroupent les modèles LLM. Vous devez en avoir au moins un
+                    activé pour utiliser des modèles dans l’onglet LLM.
+                  </p>
+                  <ul className="ml-6 list-disc space-y-2 text-base-content/80">
+                    <li>
+                      <strong>Ajouter un provider :</strong> bouton dédié, puis
+                      renseigner l’identifiant (value), le libellé (label) et le
+                      texte de description. Le provider est créé activé par défaut.
+                    </li>
+                    <li>
+                      <strong>Modifier :</strong> cliquer sur l’icône crayon
+                      pour modifier value, label, text ou activer/désactiver le
+                      provider.
+                    </li>
+                    <li>
+                      <strong>Supprimer :</strong> la suppression d’un provider
+                      désactive tous les modèles qui en dépendent. Action
+                      irréversible.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Onglet Paramètres */}
+            <div className="rounded-xl border border-base-300/50 bg-base-200/50 p-6 shadow-lg backdrop-blur-xl">
+              <div className="flex items-start gap-4">
+                <div className="rounded-2xl bg-gradient-to-r from-accent/20 to-accent/10 p-4 shadow-md ring-1 ring-accent/20">
+                  <Settings className="h-10 w-10 text-accent" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="mb-3 text-xl font-semibold text-accent">
+                    Onglet Paramètres — Configuration globale
+                  </h4>
+                  <p className="mb-4 text-base-content/80">
+                    En haut de la page, le bloc <strong>Paramètres rapides</strong> permet
+                    de configurer deux réglages essentiels.
+                  </p>
+
+                  <div className="mb-6 rounded-lg bg-warning/10 p-4 ring-1 ring-warning/20">
+                    <h5 className="mb-2 font-semibold text-warning">
+                      Modèle par défaut (Speed Create)
+                    </h5>
+                    <p className="text-sm text-base-content/80">
+                      La liste déroulante affiche tous les modèles LLM configurés
+                      dans l’onglet LLM. Vous devez <strong>obligatoirement en
+                      sélectionner un</strong> pour que la <strong>Création
+                      rapide</strong> (Speed Create) fonctionne. Sans modèle
+                      sélectionné (ou sans aucun modèle LLM configuré), la
+                      création rapide d’agents et d’experts ne pourra pas
+                      s’exécuter. Pensez à en choisir un après avoir ajouté des
+                      modèles dans l’onglet LLM.
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-base-300/30 p-4">
+                    <h5 className="mb-2 flex items-center gap-2 font-semibold text-base-content">
+                      <Target className="h-5 w-5 text-primary" />
+                      Seuil de similarité RAG
+                    </h5>
+                    <p className="mb-3 text-sm text-base-content/80">
+                      Ce réglage s’applique aux <strong>experts</strong> : il
+                      détermine quels passages de vos documents sont retenus
+                      pour répondre à une question (recherche vectorielle). Trois
+                      niveaux sont proposés :
+                    </p>
+                    <ul className="ml-6 list-disc space-y-1 text-sm text-base-content/80">
+                      <li>
+                        <strong>Strict (0,5) :</strong> seuls les passages très
+                        proches de la question sont gardés — réponses plus
+                        ciblées, moins de contexte.
+                      </li>
+                      <li>
+                        <strong>Normal (0,85) :</strong> bon équilibre entre
+                        précision et quantité de contexte (recommandé par
+                        défaut).
+                      </li>
+                      <li>
+                        <strong>Permissif (1,0) :</strong> plus de contexte
+                        inclus — utile si les réponses manquent d’informations.
+                      </li>
+                    </ul>
+                    <p className="mt-3 text-xs text-base-content/60">
+                      Le seuil correspond à une distance L2 en recherche
+                      vectorielle. Il est enregistré en base et pris en compte
+                      à chaque message envoyé à un expert.
+                    </p>
+                  </div>
+
+                  <p className="mt-4 text-sm text-base-content/70">
+                    Sous les paramètres rapides, vous trouverez les prompts
+                    système (Agent, Expert, etc.) et la liste des placeholders
+                    utilisables. Vous pouvez les modifier directement dans les
+                    champs texte.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Onglet Database */}
+            <div className="rounded-xl border border-base-300/50 bg-base-200/50 p-6 shadow-lg backdrop-blur-xl">
+              <h4 className="mb-3 text-xl font-semibold text-base-content">
+                Onglet Database
+              </h4>
+              <p className="text-base-content/80">
+                Réservé aux <strong>admin</strong>. Permet la sauvegarde et la
+                restauration de la base de données (export / import). À utiliser
+                avec précaution en environnement de production.
               </p>
             </div>
           </div>
