@@ -26,29 +26,34 @@ export default function LicencePage() {
 
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <div className="prose max-w-none rounded-2xl border border-base-300/50 bg-base-100 p-6 shadow-lg">
-          <h2 className="text-xl font-bold text-base-content">MIT License</h2>
+          <h2 className="text-xl font-bold text-base-content">
+            Licence d’utilisation — Clara AI
+          </h2>
           <p className="mt-4 text-base-content/80">
-            Permission is hereby granted, free of charge, to any person
-            obtaining a copy of this software and associated documentation files
-            (the &quot;Software&quot;), to deal in the Software without
-            restriction, including without limitation the rights to use, copy,
-            modify, merge, publish, distribute, sublicense, and/or sell copies
-            of the Software, and to permit persons to whom the Software is
-            furnished to do so, subject to the following conditions:
+            Copyright (c) 2025 — Auteur du projet
           </p>
-          <p className="mt-4 text-base-content/80">
-            The above copyright notice and this permission notice shall be
-            included in all copies or substantial portions of the Software.
+          <p className="mt-4 font-medium text-base-content/80">
+            Vous êtes autorisé à :
           </p>
+          <ul className="mt-2 list-inside list-disc space-y-1 text-base-content/80">
+            <li>Consulter le code source en entier</li>
+            <li>Utiliser l’application (l’exécuter chez vous, en local ou sur vos propres serveurs)</li>
+            <li>Modifier le code pour votre usage personnel ou interne</li>
+            <li>Créer des projets dérivés à des fins d’apprentissage ou de démonstration de compétences</li>
+          </ul>
+          <p className="mt-4 font-medium text-base-content/80">
+            Sous les conditions suivantes :
+          </p>
+          <ol className="mt-2 list-inside list-decimal space-y-2 text-base-content/80">
+            <li>
+              <strong>Attribution (citation)</strong> — Vous devez conserver la présente notice de licence et indiquer clairement l’origine du code (nom du projet, auteur) dans toute utilisation, diffusion ou œuvre dérivée.
+            </li>
+            <li>
+              <strong>Usage commercial et produits dérivés distribués</strong> — Pour tout usage commercial ou toute distribution (publique ou commerciale) d’un produit ou service basé en tout ou partie sur ce code, vous devez préalablement contacter l’auteur pour en discuter et obtenir son accord.
+            </li>
+          </ol>
           <p className="mt-4 text-base-content/80">
-            THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY
-            KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-            WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-            NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-            BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-            ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-            CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-            SOFTWARE.
+            Aucune garantie n’est fournie. Ce logiciel est fourni « tel quel ». L’auteur ne pourra être tenu responsable des dommages résultant de son utilisation.
           </p>
         </div>
       </div>

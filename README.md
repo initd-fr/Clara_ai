@@ -13,54 +13,123 @@
 
 **Fonctionnement** : application **100 % locale**. Pas d'abonnements, pas de limites, pas de paiement.
 
-Un seul `.env` à la racine (voir `.env.exemple`), puis `./start.sh`. Schéma des données : `clara-ai/prisma/schema.prisma`. Annexes : [clara-ai/README.md](clara-ai/README.md), [archibald/README.md](archibald/README.md).
+Un seul fichier `.env` à la racine (partagé Clara + Archibald). Schéma des données : `clara-ai/prisma/schema.prisma`. Annexes : [clara-ai/README.md](clara-ai/README.md), [archibald/README.md](archibald/README.md).
 
 ---
 
-## Tester rapidement (Docker)
+## Prérequis (à installer sur votre machine)
 
-**Prérequis :** **Docker Desktop** doit être installé sur votre machine avant de lancer le script. Liens d'installation officiels :
+| Outil | Utilisation | Installation |
+| ----- | ----------- | ------------ |
+| **Git** | Cloner le dépôt | [git-scm.com](https://git-scm.com/) |
+| **Node.js 18+** | Clara (frontend + API) | [nodejs.org](https://nodejs.org/) ou `brew install node` |
+| **pnpm** | Gestion des paquets Node | `npm install -g pnpm` |
+| **Python 3.12+** | Archibald (moteur IA) | [python.org](https://www.python.org/downloads/) ou `brew install python@3.12` |
+| **uv** | Gestion des paquets Python | `curl -LsSf https://astral.sh/uv/install.sh \| sh` ou `pip install uv` |
+| **Docker Desktop** | Mode production (ou Postgres + MinIO en dev) | [macOS](https://docs.docker.com/desktop/setup/install/mac-install/) · [Linux](https://docs.docker.com/desktop/setup/install/linux/) · [Windows](https://docs.docker.com/desktop/setup/install/windows-install/) |
 
-- **macOS** : [Installer Docker Desktop sur Mac](https://docs.docker.com/desktop/setup/install/mac-install/)
-- **Linux** : [Installer Docker Desktop sur Linux](https://docs.docker.com/desktop/setup/install/linux/)
-- **Windows** : [Installer Docker Desktop sur Windows](https://docs.docker.com/desktop/setup/install/windows-install/)
+Vérifier les installations :
+```bash
+node -v    # v18 ou plus
+pnpm -v
+python3 --version   # 3.12 ou plus
+uv --version
+```
 
-Un seul fichier d’environnement à la racine, partagé par Clara et Archibald :
+---
 
-1. **Copier le fichier d’exemple**  
-   `cp .env.exemple .env`
+## Mode développement (étape par étape)
 
-2. **Remplir** le `.env` : secrets (NEXTAUTH_SECRET, API_KEY sont générés automatiquement si besoin), **utilisateur par défaut** (`CLARA_DEFAULT_EMAIL`, `CLARA_DEFAULT_PASSWORD`, `CLARA_DEFAULT_FIRST_NAME`, `CLARA_DEFAULT_LAST_NAME`) et, optionnel, les clés API LLM pour le chat.
+Vous lancez Clara et Archibald **sur votre machine** ; PostgreSQL et MinIO peuvent tourner en Docker ou en local.
 
-3. **Lancer le script**  
-   `./start.sh`
+**Étape 1 — Cloner le dépôt**
+```bash
+git clone https://github.com/initd-fr/Clara_ai.git
+cd Clara_ai
+```
 
-La stack démarre (PostgreSQL, MinIO, Clara, Archibald), le schéma de base est appliqué et un **utilisateur par défaut** est créé avec les identifiants définis dans le `.env`. Ouvrez **http://localhost:3000** — Clara tourne en prod.
+**Étape 2 — Fichier d’environnement**
+```bash
+cp .env.exemple .env
+```
+Ouvrir `.env` et renseigner au minimum :
+- **Utilisateur par défaut** : `CLARA_DEFAULT_EMAIL`, `CLARA_DEFAULT_PASSWORD`, `CLARA_DEFAULT_FIRST_NAME`, `CLARA_DEFAULT_LAST_NAME`
+- **Base de données** : `DATABASE_URL` (ex. `postgresql://user:pass@localhost:5432/clara` si Postgres en local)
+- **MinIO** : `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` (ou laisser les valeurs pour Docker)
+- **Secrets** : `NEXTAUTH_SECRET`, `ARCHIBALD_API_KEY` et `API_KEY` (même valeur)
+- **Optionnel** : clés API LLM (OpenAI, Mistral, Google) pour le chat
 
-Les identifiants du compte par défaut sont ceux du `.env` (CLARA_DEFAULT_EMAIL, CLARA_DEFAULT_PASSWORD, etc.). Connectez-vous avec ces identifiants.
+**Étape 3 — Démarrer PostgreSQL et MinIO (Docker)**  
+Si vous n’avez pas Postgres/MinIO en local, dans un terminal à la racine du projet :
+```bash
+docker compose up -d postgres minio
+```
+Attendre quelques secondes que Postgres soit prêt.
 
-**Mot de passe oublié / réinitialisation**  
-Cette version tourne en local : il n’y a pas de « mot de passe oublié » par email. Pour réinitialiser ou recréer un compte, exécutez le script **createClaraUser** à la main (après `db:push`) :  
-`docker compose run --rm clara node src/scripts/createClaraUser.js`  
-Le script utilise les variables `CLARA_DEFAULT_*` du `.env` ; vous pouvez modifier l’email dans le script pour cibler un autre utilisateur.
+**Étape 4 — Clara (Next.js)**
+```bash
+cd clara-ai
+pnpm install
+pnpm db:push
+node src/scripts/createClaraUser.js
+pnpm dev
+```
+Clara tourne sur **http://localhost:3000**. Laisser ce terminal ouvert.
 
-**Configurer le chat (providers et modèles)**  
-Au premier lancement, le script crée les **3 providers** par défaut (OpenAI, Mistral, Google). Pour pouvoir envoyer des messages :
+**Étape 5 — Archibald (moteur IA)**  
+Dans un **nouveau terminal**, à la racine du projet :
+```bash
+cd Clara_ai
+uv sync
+uv run --directory archibald uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+Archibald tourne sur **http://localhost:8000**. Dans `.env`, mettre `ARCHIBALD_API_URL=http://localhost:8000` et `ARCHIBALD_API_KEY` (même valeur que `API_KEY`).
 
-1. Connectez-vous avec le compte par défaut.
-2. Allez sur **http://localhost:3000/support**.
-3. **Onglet « Providers »** : les 3 providers (OpenAI, Mistral, Google) sont déjà présents ; vous pouvez les activer/désactiver.
-4. **Onglet « Models »** : ajoutez les modèles que vous voulez utiliser (ex. GPT-4o, Mistral Small, Gemini 2.5 Flash). Les identifiants de modèles se trouvent dans les docs officielles :
-   - [OpenAI — Tous les modèles](https://developers.openai.com/api/docs/models/all)
-   - [Mistral — Modèles](https://docs.mistral.ai/getting-started/models)
-   - [Google Gemini — Modèles](https://ai.google.dev/gemini-api/docs/models?hl=fr)
+**Résumé** : Ouvrir http://localhost:3000, se connecter avec les identifiants du `.env`. Pour utiliser le chat, aller dans **Support → Providers / Models** et ajouter au moins un modèle.
 
-Une fois au moins un modèle ajouté par provider souhaité, le chat est utilisable.
+---
 
-- Arrêter : `docker compose down`
-- Logs : `docker compose logs -f`
+## Mode production (étape par étape)
 
-_Sous Windows (sans WSL) : copier `.env.exemple` en `.env`, puis `docker compose up -d --build`, puis `docker compose run --rm clara pnpm db:push`, puis `docker compose run --rm clara node src/scripts/createClaraUser.js` pour créer l’utilisateur Clara._
+Toute la stack tourne dans **Docker** (PostgreSQL, MinIO, Clara, Archibald). Une seule commande après configuration.
+
+**Étape 1 — Installer Docker Desktop**  
+Télécharger et installer : [Docker Desktop](https://docs.docker.com/desktop/). L’ouvrir et attendre qu’il soit prêt.
+
+**Étape 2 — Cloner le dépôt**
+```bash
+git clone https://github.com/initd-fr/Clara_ai.git
+cd Clara_ai
+```
+
+**Étape 3 — Fichier d’environnement**
+```bash
+cp .env.exemple .env
+```
+Éditer `.env` et renseigner :
+- **Utilisateur par défaut** : `CLARA_DEFAULT_EMAIL`, `CLARA_DEFAULT_PASSWORD`, `CLARA_DEFAULT_FIRST_NAME`, `CLARA_DEFAULT_LAST_NAME`
+- **Secrets** : `NEXTAUTH_SECRET`, `API_KEY`, `ARCHIBALD_API_KEY` (le script peut les générer automatiquement si vous lancez `./start.sh` ou `.\start.ps1` une première fois sans les remplir)
+- **Optionnel** : clés API LLM pour le chat. Les hostnames `postgres` et `minio` dans le `.env` sont déjà adaptés à Docker.
+
+**Étape 4 — Lancer la stack**
+
+- **Linux / macOS :** `./start.sh`
+- **Windows (PowerShell) :** `.\start.ps1`  
+- **Windows (invite de commandes ou double-clic) :** `start.bat`
+
+Le script construit les images, démarre PostgreSQL, MinIO, Clara et Archibald, applique le schéma en base et crée l’utilisateur par défaut.
+
+**Étape 5 — Utiliser l’application**  
+Ouvrir **http://localhost:3000** et se connecter avec les identifiants du `.env`.  
+Configurer le chat : **Support** → onglet **Providers** (activer) → onglet **Models** (ajouter des modèles). Références : [OpenAI](https://developers.openai.com/api/docs/models/all), [Mistral](https://docs.mistral.ai/getting-started/models), [Google Gemini](https://ai.google.dev/gemini-api/docs/models?hl=fr).
+
+**Arrêter la stack :** `docker compose down`  
+**Voir les logs :** `docker compose logs -f`
+
+**Recréer l’utilisateur par défaut :**  
+`docker compose run --rm clara node src/scripts/createClaraUser.js`
+
+*Sous Windows sans WSL : utiliser `.\start.ps1` ou `start.bat` (équivalent de `start.sh`). Si vous lancez Docker à la main : `docker compose up -d --build`, puis `docker compose run --rm clara pnpm db:push`, puis `docker compose run --rm clara node src/scripts/createClaraUser.js`.*
 
 ---
 
@@ -75,68 +144,7 @@ _Sous Windows (sans WSL) : copier `.env.exemple` en `.env`, puis `docker compose
 
 Flux typique : l’utilisateur utilise l’UI Clara → requêtes tRPC → Prisma / MinIO ; le chat et le RAG sont envoyés à Archibald, qui lit/écrit en PostgreSQL et MinIO.
 
----
-
-## Prérequis
-
-- **Clara** : Node.js 18+, pnpm, PostgreSQL (avec `vector`), MinIO.
-- **Archibald** : Python 3.12+, uv, PostgreSQL (pgvector), MinIO.
-- **Un seul `.env`** à la racine (partagé Clara + Archibald). **Un seul `.venv`** à la racine (Python / uv).
-- **Production** : Docker et Docker Compose (voir plus bas).
-
----
-
-## Installation en développement
-
-### 1. Cloner et préparer l’environnement
-
-```bash
-git clone https://github.com/VOTRE_USERNAME/clara-ai.git
-cd clara-ai
-cp .env.exemple .env
-# Éditer .env (racine) : DATABASE_URL, MINIO_*, NEXTAUTH_*, clés API LLM, ARCHIBALD_*, etc.
-```
-
-Clara et Archibald chargent automatiquement le `.env` à la racine (pas de `.env` dans `clara-ai/` ni `archibald/`).
-
-### 2. Lancer Clara
-
-PostgreSQL et MinIO doivent être accessibles (local ou Docker).
-
-```bash
-cd clara-ai
-pnpm install
-pnpm db:push
-pnpm dev
-```
-
-(Next.js + WebSocket sur 3000 et 3001.) Détails : [clara-ai/README.md](clara-ai/README.md).
-
-### 3. Lancer Archibald (moteur IA déporté, uniquement en dev sans Docker)
-
-_Ne s'applique pas si vous utilisez `./start.sh` (Docker) : les services démarrent ensemble._
-
-Un seul `.venv` à la racine (workspace uv) :
-
-```bash
-# À la racine du dépôt
-uv sync
-uv run --directory archibald uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-API sur **http://localhost:8000**. Dans `.env` : `ARCHIBALD_API_URL=http://localhost:8000` et `ARCHIBALD_API_KEY` (même valeur que `API_KEY`). Détails : [archibald/README.md](archibald/README.md).
-
----
-
-## Installation sur son serveur (production)
-
-Même principe que « Tester rapidement » : **un seul `.env` à la racine**, puis le script.
-
-1. À la racine : `cp .env.exemple .env`
-2. Éditer `.env` : secrets, clés API, URLs de prod, et **utilisateur par défaut** (`CLARA_DEFAULT_EMAIL`, `CLARA_DEFAULT_PASSWORD`, `CLARA_DEFAULT_FIRST_NAME`, `CLARA_DEFAULT_LAST_NAME`). Les valeurs par défaut (postgres, minio comme hostnames) sont prévues pour Docker.
-3. `./start.sh` — Clara et Archibald tournent en prod ; un utilisateur par défaut est créé avec les identifiants renseignés dans le `.env`.
-
-Pour un déploiement public, placer un reverse proxy (Nginx, Caddy, Traefik) devant Clara et Archibald, en HTTPS, et adapter `NEXTAUTH_URL` et `CORS_ORIGINS` dans `.env`.
+**En production (déploiement public)** : placer un reverse proxy (Nginx, Caddy, Traefik) devant Clara et Archibald, en HTTPS, et adapter `NEXTAUTH_URL` et `CORS_ORIGINS` dans `.env`.
 
 ---
 

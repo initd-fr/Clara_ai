@@ -2,7 +2,7 @@
 
 export const APP_CONFIG = {
   name: "Clara AI",
-  version: "Version MIT Licence",
+  version: "0.1.0",
   year: new Date().getFullYear(),
 
   // Liens du développeur (page d'accueil)
