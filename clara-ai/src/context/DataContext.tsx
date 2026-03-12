@@ -12,12 +12,10 @@ import React, {
 
 interface DataState {
   models?: any[];
-  news?: any[];
   storeModels?: any[];
   storeHomeModels?: any[];
   tickets?: any[];
   isLoadingModels: boolean;
-  isLoadingNews: boolean;
   isLoadingStore: boolean;
   isLoadingStoreHome: boolean;
   isLoadingTickets: boolean;
@@ -37,7 +35,6 @@ const DataProvider = memo(function DataProvider({
 }) {
   const [data, setData] = useState<DataState>({
     isLoadingModels: true,
-    isLoadingNews: true,
     isLoadingStore: true,
     isLoadingStoreHome: true,
     isLoadingTickets: true,

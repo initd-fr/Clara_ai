@@ -14,13 +14,11 @@ import { api } from "~/trpc/react";
 // ~  ///////////////////////////////////////////////////////////////////////////////IMPORTS//////////////////////////////////////////////////////////////////////////////////////
 // ?  ///////////////////////////////////////////////////////////////////////////////TYPES///////////////////////////////////////////////////////////////////////////////////////
 export type BaseAccountType = string;
-export type UserRole = "user" | "support" | "admin" | "companyManager";
 export type UserType = {
   id: string;
   firstName: string;
   lastName: string;
   accountType: string;
-  role: UserRole;
   email: string;
   subscriptionInfo?: {
     hasSubscription: boolean;
@@ -84,7 +82,6 @@ const SessionProvider = memo(function SessionProvider({
         user: {
           id: String(user.id),
           accountType: user.accountType,
-          role: user.role as UserRole,
           email: user.email || "",
           firstName: user.firstName || "",
           lastName: user.lastName || "",

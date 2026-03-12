@@ -12,7 +12,6 @@ import {
 import { emitProgress } from "~/server/shared/progressBridge";
 import { settingsManager } from "~/server/api/routers/Settings/settingsManager";
 import { log, LogLevel } from "~/globalUtils/debug";
-import { AccessControlService } from "~/server/services/accessControl";
 import axios from "axios";
 /////////////////////////////////////////////////////////////////////////////////IMPORTS//////////////////////////////////////////////////////////////////////////////////////
 interface ProcessFileResult {
@@ -65,32 +64,14 @@ export const bucketsRouter = createTRPCRouter({
       }
 
       try {
-        // Vérifier que le modèle existe
-        let model;
-
-        // Si l'utilisateur est admin/support, il peut accéder aux modèles store
-        if (session.user.role === "admin" || session.user.role === "support") {
-          model = await db.models.findUnique({
-            where: {
-              id: modelId,
-              // Pour les admins/support, permettre l'accès aux modèles store (isTemplate: true) et aux modèles personnels
-              OR: [
-                { userId: userId }, // Modèles personnels
-                { isTemplate: true, userId: null }, // Modèles store
-              ],
-            },
-            select: { bucketName: true },
-          });
-        } else {
-          // Pour les utilisateurs normaux, seulement leurs modèles personnels
-          model = await db.models.findUnique({
-            where: {
-              id: modelId,
-              userId,
-            },
-            select: { bucketName: true },
-          });
-        }
+        // Vérifier que le modèle existe — accès aux modèles personnels et store (app locale : tout le monde)
+        const model = await db.models.findUnique({
+          where: {
+            id: modelId,
+            OR: [{ userId: userId }, { isTemplate: true, userId: null }],
+          },
+          select: { bucketName: true },
+        });
 
         if (!model?.bucketName) {
           throw new TRPCError({
@@ -212,36 +193,14 @@ export const bucketsRouter = createTRPCRouter({
           await reconnectMinio();
         }
 
-        // Récupérer le modèle pour vérifier les permissions
-        let model;
-
-        // Si l'utilisateur est admin/support, il peut supprimer des fichiers des modèles store
-        if (session.user.role === "admin" || session.user.role === "support") {
-          model = await db.models.findUnique({
-            where: {
-              id: modelId,
-              // Pour les admins/support, permettre l'accès aux modèles store (isTemplate: true) et aux modèles personnels
-              OR: [
-                { userId: userId }, // Modèles personnels
-                { isTemplate: true, userId: null }, // Modèles store
-              ],
-            },
-            select: {
-              bucketName: true,
-            },
-          });
-        } else {
-          // Pour les utilisateurs normaux, seulement leurs modèles personnels
-          model = await db.models.findUnique({
-            where: {
-              id: modelId,
-              userId,
-            },
-            select: {
-              bucketName: true,
-            },
-          });
-        }
+        // Récupérer le modèle pour vérifier les permissions (app locale : tout le monde)
+        const model = await db.models.findUnique({
+          where: {
+            id: modelId,
+            OR: [{ userId: userId }, { isTemplate: true, userId: null }],
+          },
+          select: { bucketName: true },
+        });
 
         if (!model?.bucketName) {
           throw new TRPCError({
@@ -322,39 +281,14 @@ export const bucketsRouter = createTRPCRouter({
             await reconnectMinio();
           }
 
-          // Récupérer le modèle pour vérifier les permissions
-          let model;
-
-          // Si l'utilisateur est admin/support, il peut accéder aux fichiers des modèles store
-          if (
-            session.user.role === "admin" ||
-            session.user.role === "support"
-          ) {
-            model = await db.models.findUnique({
-              where: {
-                id: modelId,
-                // Pour les admins/support, permettre l'accès aux modèles store (isTemplate: true) et aux modèles personnels
-                OR: [
-                  { userId: userId }, // Modèles personnels
-                  { isTemplate: true, userId: null }, // Modèles store
-                ],
-              },
-              select: {
-                bucketName: true,
-              },
-            });
-          } else {
-            // Pour les utilisateurs normaux, seulement leurs modèles personnels
-            model = await db.models.findUnique({
-              where: {
-                id: modelId,
-                userId,
-              },
-              select: {
-                bucketName: true,
-              },
-            });
-          }
+          // Récupérer le modèle pour vérifier les permissions (app locale : tout le monde)
+          const model = await db.models.findUnique({
+            where: {
+              id: modelId,
+              OR: [{ userId: userId }, { isTemplate: true, userId: null }],
+            },
+            select: { bucketName: true },
+          });
 
           if (!model?.bucketName) {
             throw new TRPCError({

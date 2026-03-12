@@ -49,7 +49,6 @@ type ExtendedUser = {
   id: string;
   accountType: string;
   sessionToken: string | null;
-  role: string;
   email: string;
   firstName: string;
   lastName: string;

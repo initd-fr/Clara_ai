@@ -5,8 +5,6 @@ import { compare } from "bcryptjs";
 import { randomBytes } from "node:crypto";
 import { db } from "~/server/db";
 import { CleanupService } from "~/server/services/cleanupService";
-import type { Role } from "@prisma/client";
-
 type AccountType = string;
 
 declare module "next-auth" {
@@ -14,7 +12,6 @@ declare module "next-auth" {
     id: string;
     accountType: AccountType;
     sessionToken: string | null;
-    role: Role;
     email: string;
     firstName: string;
     lastName: string;
@@ -32,7 +29,6 @@ declare module "next-auth/jwt" {
     id: string;
     accountType: AccountType;
     sessionToken: string | null;
-    role: Role;
     email: string;
     firstName: string;
     lastName: string;
@@ -73,7 +69,6 @@ export const authOptions: any = {
         token.id = user.id;
         token.accountType = user.accountType;
         token.sessionToken = user.sessionToken;
-        token.role = user.role;
         token.email = user.email;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
@@ -121,7 +116,6 @@ export const authOptions: any = {
       session.user.id = token.id;
       session.user.accountType = token.accountType;
       session.user.sessionToken = token.sessionToken;
-      session.user.role = token.role;
       session.user.email = token.email;
       session.user.firstName = token.firstName;
       session.user.lastName = token.lastName;
@@ -219,7 +213,6 @@ export const authOptions: any = {
           accountType: user.accountType,
           sessionToken: newSessionToken,
           email: user.email,
-          role: user.role,
           firstName: user.firstName,
           lastName: user.lastName,
         };

@@ -37,7 +37,6 @@ async function main() {
       lastName: (lastName ?? "AI").trim(),
       password: hashedPassword,
       accountType: "personal",
-      role: "admin",
     },
   });
   console.log(

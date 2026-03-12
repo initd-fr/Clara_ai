@@ -146,14 +146,6 @@ export default withAuth(
       return NextResponse.next();
     }
 
-    // === SÉCURITÉ : Contrôle d'accès support ===
-    if (pathname.startsWith("/support")) {
-      const role = req.nextauth.token?.role;
-      if (role !== "support" && role !== "admin") {
-        return NextResponse.redirect(new URL("/", req.url));
-      }
-    }
-
     // === SÉCURITÉ : Headers de sécurité ===
     const response = NextResponse.next();
 

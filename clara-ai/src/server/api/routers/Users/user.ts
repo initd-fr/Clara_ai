@@ -297,7 +297,7 @@ export const userRouter = createTRPCRouter({
         }
 
         console.log(
-          `✅ [DELETE_OWN_ACCOUNT] Utilisateur trouvé: ${userToDelete.email} (${userToDelete.role})`,
+          `✅ [DELETE_OWN_ACCOUNT] Utilisateur trouvé: ${userToDelete.email}`,
         );
         console.log(`📊 [DELETE_OWN_ACCOUNT] Données à supprimer:`, {
           storeAccess: userToDelete.storeAccess.length,

@@ -5,8 +5,6 @@ import { emitProgress } from "~/server/shared/progressBridge";
 import type { Session } from "next-auth";
 import { getMinio, testMinioConnection, reconnectMinio } from "~/server/db";
 import { processFileAfterUpload } from "~/server/api/routers/Files/buckets";
-import { AccessControlService } from "~/server/services/accessControl";
-// PgRawPool n'est plus utilisé directement, remplacé par embeddingsService
 import { embeddingsService } from "~/server/api/routers/chat/ModelsPerso/Services/embeddings";
 /////////////////////////////////////////////////////////////////////////////////IMPORTS//////////////////////////////////////////////////////////////////////////////////////
 

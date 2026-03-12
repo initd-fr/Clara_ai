@@ -16,7 +16,6 @@ interface SubscriptionInfo {
 }
 
 interface User {
-  role?: string;
   accountType?: string;
   firstName?: string;
   subscriptionInfo?: SubscriptionInfo;
@@ -26,15 +25,13 @@ interface User {
 
 ////////////////////////////////////////////////////////////////////////////////FUNCTIONS///////////////////////////////////////////////////////////////////////////////////////
 
-const formatAccountType = (role: string, accountType: string): string => {
-  if (role === "admin") return "Admin";
-  if (role === "support") return "Support";
+const formatAccountType = (accountType: string): string => {
   if (accountType) {
     return (
       accountType.charAt(0).toUpperCase() + accountType.slice(1).toLowerCase()
     );
   }
-  return "User";
+  return "Utilisateur";
 };
 ////////////////////////////////////////////////////////////////////////////////FUNCTIONS///////////////////////////////////////////////////////////////////////////////////////
 
@@ -62,16 +59,12 @@ const UserAvatar = memo(() => (
 ////////////////////////////////////////////////////////////////////////////////TODO USER INFO///////////////////////////////////////////////////////////////////////////////////////
 const UserInfo = memo(({ user }: { user: User }) => {
   const getBadgeInfo = () => {
-    if (user?.role === "admin")
-      return { className: "badge-error text-base-100", text: "Admin" };
-    if (user?.role === "support")
-      return { className: "badge-warning text-base-100", text: "Support" };
+    const label =
+      user?.subscriptionInfo?.subscriptionName ??
+      formatAccountType(user?.accountType ?? "");
     return {
       className: "badge-primary text-base-100",
-      text:
-        (user?.subscriptionInfo?.subscriptionName ??
-          formatAccountType(user?.role ?? "", user?.accountType ?? "")) ||
-        "Utilisateur",
+      text: label || "Utilisateur",
     };
   };
   //////////////////////////////////////////////////////////////////////////////////TODO END USER INFO///////////////////////////////////////////////////////////////////////////////////////

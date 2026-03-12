@@ -9,12 +9,7 @@ export class AccessControlService {
     return null;
   }
 
-  static async getMessageLimit(userId: string): Promise<number | null> {
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: { role: true },
-    });
-    if (user?.role === "admin" || user?.role === "support") return null;
+  static async getMessageLimit(_userId: string): Promise<number | null> {
     return null; // App locale : illimité
   }
 
@@ -26,16 +21,13 @@ export class AccessControlService {
   }> {
     const user = await db.user.findUnique({
       where: { id: userId },
-      select: { currentDailyMessages: true, lastReset: true, role: true },
+      select: { currentDailyMessages: true, lastReset: true },
     });
     if (!user) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Utilisateur non trouvé",
       });
-    }
-    if (user.role === "admin" || user.role === "support") {
-      return { canSend: true, currentCount: 0 };
     }
     const now = new Date();
     const lastReset = user.lastReset ?? new Date(0);
@@ -55,32 +47,17 @@ export class AccessControlService {
   }
 
   static async incrementMessageCount(userId: string): Promise<void> {
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: { role: true },
-    });
-    if (user?.role === "admin" || user?.role === "support") return;
     await db.user.update({
       where: { id: userId },
       data: { currentDailyMessages: { increment: 1 } },
     });
   }
 
-  static async canCreatePersonalModels(userId: string): Promise<boolean> {
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: { role: true },
-    });
-    if (user?.role === "admin" || user?.role === "support") return true;
+  static async canCreatePersonalModels(_userId: string): Promise<boolean> {
     return true; // App locale : tout le monde peut créer
   }
 
-  static async canAccessStoreModels(userId: string): Promise<boolean> {
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: { role: true },
-    });
-    if (user?.role === "admin" || user?.role === "support") return true;
+  static async canAccessStoreModels(_userId: string): Promise<boolean> {
     return true; // App locale : accès à tout
   }
 

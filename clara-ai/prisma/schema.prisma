@@ -39,22 +39,15 @@ model MessageDocument {
 model User {
     id                     String             @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
     isPaid                 Boolean            @default(false)
-    dataConsent            Boolean            @default(false)
     accountType            String
     sessionToken           String?
     previousToken          String?
-    resetPasswordToken     String?
-    resetPasswordTokenDate DateTime?
     currentDailyMessages   Int                @default(0) // Compteur actuel des messages journaliers
     firstName              String
     lastName               String
     userImage              String?
     email                  String             @unique
-    newEmail               String?
-    newEmailToken          String?
-    newEmailTokenDate      DateTime?
     password               String
-    role                   Role               @default(user)
     lastReset              DateTime?
     lastConnection         DateTime?          @default(now()) // Dernière connexion de l'utilisateur
     isOnline               Boolean            @default(false) // État de connexion actuel
@@ -262,17 +255,6 @@ model StoreModel {
     @@index([categoryId])
 }
 
-model News {
-    id          Int       @id @default(autoincrement())
-    title       String // Titre de l'actualité
-    badge       NewsBadge // Badge de l'actualité
-    content     String // Version courte pour le carrousel
-    priority    Int       @default(0) // Pour l'ordre d'affichage
-    publishDate DateTime // Date de publication prévue
-    createdAt   DateTime  @default(now())
-    updatedAt   DateTime  @updatedAt
-}
-
 model Ticket {
     id               Int          @id @default(autoincrement())
     title            String // Titre du ticket
@@ -314,27 +296,11 @@ model TicketTracing {
     @@index([createdAt])
 }
 
-enum NewsBadge {
-    FEATURE // Nouvelle fonctionnalité
-    UPDATE // Mise à jour
-    MODEL // Nouveau modèle
-    MAINTENANCE // Maintenance prévue
-    PROMOTION // Offre spéciale
-    GENERAL // Actualité générale
-}
-
 enum TicketStatus {
     OPEN // Ticket ouvert
     IN_PROGRESS // En cours de traitement
     WAITING_FOR_USER // En attente de réponse utilisateur
     RESOLVED // Résolu
-}
-
-enum Role {
-    user
-    companyManager
-    support
-    admin
 }
 
 // Chats store (plusieurs chats par modèle store)

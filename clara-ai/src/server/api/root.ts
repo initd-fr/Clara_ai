@@ -15,7 +15,6 @@ import { mistralRouter } from "./routers/chat/ModelsPerso/Providers/mistral";
 import { googleRouter } from "./routers/chat/ModelsPerso/Providers/google";
 import { providerRouter } from "~/server/api/routers/Providers/provider";
 import { toolsRouter } from "~/server/api/routers/chat/ModelsPerso/Services/simplify";
-import { logRouter } from "~/server/api/routers/Log/log";
 import { taskProgressRouter } from "~/server/api/routers/taskProgress";
 import {
   createTRPCRouter,
@@ -42,7 +41,6 @@ export const appRouter = createTRPCRouter({
   availableModels: availableModelsRouter,
   adminModels: adminModelsRouter,
   provider: providerRouter,
-  log: logRouter,
   taskProgress: taskProgressRouter,
 });
 

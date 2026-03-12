@@ -37,7 +37,7 @@ Un seul fichier d’environnement à la racine, partagé par Clara et Archibald 
 
 La stack démarre (PostgreSQL, MinIO, Clara, Archibald), le schéma de base est appliqué et un **utilisateur par défaut** est créé avec les identifiants définis dans le `.env`. Ouvrez **http://localhost:3000** — Clara tourne en prod.
 
-Les identifiants du compte par défaut sont ceux du `.env` (CLARA_DEFAULT_EMAIL, CLARA_DEFAULT_PASSWORD, etc.). Vous pouvez vous connecter avec ces identifiants ou créer un nouveau compte via l’inscription.
+Les identifiants du compte par défaut sont ceux du `.env` (CLARA_DEFAULT_EMAIL, CLARA_DEFAULT_PASSWORD, etc.). Connectez-vous avec ces identifiants.
 
 **Mot de passe oublié / réinitialisation**  
 Cette version tourne en local : il n’y a pas de « mot de passe oublié » par email. Pour réinitialiser ou recréer un compte, exécutez le script **createClaraUser** à la main (après `db:push`) :  
@@ -47,7 +47,7 @@ Le script utilise les variables `CLARA_DEFAULT_*` du `.env` ; vous pouvez modifi
 **Configurer le chat (providers et modèles)**  
 Au premier lancement, le script crée les **3 providers** par défaut (OpenAI, Mistral, Google). Pour pouvoir envoyer des messages :
 
-1. Connectez-vous avec le compte par défaut (admin).
+1. Connectez-vous avec le compte par défaut.
 2. Allez sur **http://localhost:3000/support**.
 3. **Onglet « Providers »** : les 3 providers (OpenAI, Mistral, Google) sont déjà présents ; vous pouvez les activer/désactiver.
 4. **Onglet « Models »** : ajoutez les modèles que vous voulez utiliser (ex. GPT-4o, Mistral Small, Gemini 2.5 Flash). Les identifiants de modèles se trouvent dans les docs officielles :

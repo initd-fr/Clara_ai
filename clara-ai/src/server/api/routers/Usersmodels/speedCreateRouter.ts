@@ -1081,13 +1081,6 @@ Une fois les analyses terminées :
         });
       }
 
-      if (sessionUser.role !== "admin" && sessionUser.role !== "support") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Vous n'avez pas les droits pour accorder des accès de test",
-        });
-      }
-
       const user = await db.user.findUnique({
         where: { id: userId },
       });
@@ -1137,7 +1130,7 @@ Une fois les analyses terminées :
         data: {
           userId,
           action: "GRANT_STORE_ACCESS",
-          description: `Accès ${accessType} accordé au modèle "${storeModel.name}" par ${sessionUser.role} (${sessionUser.firstName} ${sessionUser.lastName})`,
+          description: `Accès ${accessType} accordé au modèle "${storeModel.name}" par ${sessionUser.firstName} ${sessionUser.lastName}`,
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
@@ -1170,13 +1163,6 @@ Une fois les analyses terminées :
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Utilisateur non authentifié",
-        });
-      }
-
-      if (sessionUser.role !== "admin" && sessionUser.role !== "support") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Vous n'avez pas les droits pour révoquer des accès",
         });
       }
 
@@ -1226,7 +1212,7 @@ Une fois les analyses terminées :
         data: {
           userId,
           action: "REVOKE_STORE_ACCESS",
-          description: `Accès révoqué au modèle "${storeModel.name}" par ${sessionUser.role} (${sessionUser.firstName} ${sessionUser.lastName})`,
+          description: `Accès révoqué au modèle "${storeModel.name}" par ${sessionUser.firstName} ${sessionUser.lastName}`,
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,

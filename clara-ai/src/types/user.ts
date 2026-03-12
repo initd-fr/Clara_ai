@@ -3,9 +3,8 @@ export type User = {
   firstName: string;
   lastName: string;
   email: string;
-  role: string;
   isOnline: boolean;
-  accountType: string; // Changé pour être dynamique
+  accountType: string;
   isPaid: boolean;
   currentDailyMessages: number;
   lastConnection: Date | null;
