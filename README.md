@@ -1,72 +1,176 @@
-# Clara AI — Assistant IA (app locale)
+# Clara AI — AI Assistant (local app)
+
+## TL;DR
+
+Clara AI is a local AI assistant platform built around a RAG architecture.
+
+- Next.js frontend (chat interface, user system)
+- FastAPI backend (LLM orchestration, RAG engine)
+- PostgreSQL + pgvector
+- Multi-provider LLM support (OpenAI, Mistral, Anthropic, Gemini)
+
+-> Focus: building a structured, production-ready AI backend with a strong Python architecture.
 
 <p align="center">
   <img src="clara-ai/public/LogoClara_Dark.webp" alt="Clara AI" width="200" />
 </p>
 
-[![License](https://img.shields.io/badge/License-Attribution%2BContact-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Clara AI** est une plateforme web d’assistant conversationnel IA :
+**Clara AI** is a web platform for conversational AI assistance:
 
-- **Clara** (`clara-ai/`) : application Next.js (frontend + API tRPC), authentification, gestion des conversations et des modèles personnels, base PostgreSQL (Prisma), stockage MinIO. Le chat et le RAG sont délégués au moteur Archibald.
-- **Archibald** (`archibald/`) : API FastAPI (Python) qui centralise les appels LLM (OpenAI, Mistral, Anthropic, Google), le RAG (pgvector), le traitement de documents et la recherche web (Tavily). Clara s’y connecte via `ARCHIBALD_API_URL` et `ARCHIBALD_API_KEY`.
+- **Clara** (`clara-ai/`): Next.js application (frontend + tRPC API), authentication, conversation and custom model management, PostgreSQL database (Prisma), and MinIO storage. Chat and RAG are delegated to the Archibald engine.
+- **Archibald** (`archibald/`): FastAPI (Python) API that centralizes LLM calls (OpenAI, Mistral, Anthropic, Google), RAG (pgvector), document processing, and web search (Tavily). Clara connects to it through `ARCHIBALD_API_URL` and `ARCHIBALD_API_KEY`.
 
-**Fonctionnement** : application **100 % locale**. Pas d'abonnements, pas de limites, pas de paiement.
+## Technical Focus
 
-Un seul fichier `.env` à la racine (partagé Clara + Archibald). Schéma des données : `clara-ai/prisma/schema.prisma`. Annexes : [clara-ai/README.md](clara-ai/README.md), [archibald/README.md](archibald/README.md).
+This project focuses on:
+
+- Python backend development with FastAPI (Archibald)
+- RAG pipeline implementation (pgvector + embeddings)
+- LLM orchestration across multiple providers
+- Integration between frontend and AI backend systems
+
+The goal is to build a scalable and maintainable AI backend architecture.
+
+## RAG Workflow
+
+1. User input
+
+- The user sends a message from the frontend (Clara)
+
+2. Request routing
+
+- The request is sent to the FastAPI backend (Archibald)
+
+3. Document retrieval
+
+- Relevant documents are retrieved from PostgreSQL using pgvector similarity search
+
+4. Context building
+
+- Retrieved documents are injected into the prompt as context
+
+5. LLM processing
+
+- The request is sent to the selected provider (OpenAI, Mistral, Anthropic, etc.)
+
+6. Response generation
+
+- The model generates a response using both the user input and retrieved context
+
+7. Response return
+
+- The response is sent back to Clara and displayed to the user
+
+Optional (present in the codebase):
+
+- Web search integration via Tavily
+- Agent / expert modes in backend routes
+
+**How it works**: an application hosted locally, with dependencies on external APIs for AI models and web search. No subscriptions or payments; no artificial limitations imposed by the application itself.
+
+A single `.env` file at the repository root (shared by Clara + Archibald). Data schema: `clara-ai/prisma/schema.prisma`. Additional docs: [clara-ai/README.md](clara-ai/README.md), [archibald/README.md](archibald/README.md).
 
 ---
 
-## Prérequis (à installer sur votre machine)
+## Prerequisites (install on your machine)
 
-| Outil | Utilisation | Installation |
-| ----- | ----------- | ------------ |
-| **Git** | Cloner le dépôt | [git-scm.com](https://git-scm.com/) |
-| **Node.js 18+** | Clara (frontend + API) | [nodejs.org](https://nodejs.org/) ou `brew install node` |
-| **pnpm** | Gestion des paquets Node | `npm install -g pnpm` |
-| **Python 3.12+** | Archibald (moteur IA) | [python.org](https://www.python.org/downloads/) ou `brew install python@3.12` |
-| **uv** | Gestion des paquets Python | `curl -LsSf https://astral.sh/uv/install.sh \| sh` ou `pip install uv` |
-| **Docker Desktop** | Mode production (ou Postgres + MinIO en dev) | [macOS](https://docs.docker.com/desktop/setup/install/mac-install/) · [Linux](https://docs.docker.com/desktop/setup/install/linux/) · [Windows](https://docs.docker.com/desktop/setup/install/windows-install/) |
+| Tool                               | Usage                                        | Installation                                                                                                                                                                                                    |
+| ---------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Git**                            | Clone the repository                         | [git-scm.com](https://git-scm.com/)                                                                                                                                                                             |
+| **Node.js 18+**                    | Clara (frontend + API)                       | [nodejs.org](https://nodejs.org/) or `brew install node`                                                                                                                                                        |
+| **pnpm**                           | Node package manager                         | `npm install -g pnpm`                                                                                                                                                                                           |
+| **Python 3.9+ (3.12 recommended)** | Archibald (AI engine)                        | [python.org](https://www.python.org/downloads/) or `brew install python@3.12`                                                                                                                                   |
+| **uv**                             | Python package manager                       | `curl -LsSf https://astral.sh/uv/install.sh \| sh` or `pip install uv`                                                                                                                                          |
+| **Docker Desktop**                 | Production mode (or Postgres + MinIO in dev) | [macOS](https://docs.docker.com/desktop/setup/install/mac-install/) · [Linux](https://docs.docker.com/desktop/setup/install/linux/) · [Windows](https://docs.docker.com/desktop/setup/install/windows-install/) |
 
-Vérifier les installations :
+Check installations:
+
 ```bash
-node -v    # v18 ou plus
+node -v    # v18 or later
 pnpm -v
-python3 --version   # 3.12 ou plus
+python3 --version   # 3.9 or later (3.12 recommended)
 uv --version
 ```
 
 ---
 
-## Mode développement (étape par étape)
+## Current Capabilities
 
-Vous lancez Clara et Archibald **sur votre machine** ; PostgreSQL et MinIO peuvent tourner en Docker ou en local.
+- Multi-provider chat (OpenAI, Mistral, Anthropic, Gemini)
+- RAG system with PostgreSQL + pgvector
+- Document ingestion and retrieval
+- Web search integration (Tavily)
+- User system and conversation management
+- API-based architecture between frontend and AI backend
 
-**Étape 1 — Cloner le dépôt**
+## Quick Start (Docker)
+
+```bash
+git clone https://github.com/initd-fr/Clara_ai.git
+cd Clara_ai
+cp .env.exemple .env
+./start.sh
+```
+
+Open http://localhost:3000
+
+---
+
+## Development mode (step by step)
+
+You run Clara and Archibald **on your machine**; PostgreSQL and MinIO can run in Docker or locally.
+
+**Step 1 — Clone the repository**
+
 ```bash
 git clone https://github.com/initd-fr/Clara_ai.git
 cd Clara_ai
 ```
 
-**Étape 2 — Fichier d’environnement**
+**Step 2 — Environment file**
+
 ```bash
 cp .env.exemple .env
 ```
-Ouvrir `.env` et renseigner au minimum :
-- **Utilisateur par défaut** : `CLARA_DEFAULT_EMAIL`, `CLARA_DEFAULT_PASSWORD`, `CLARA_DEFAULT_FIRST_NAME`, `CLARA_DEFAULT_LAST_NAME`
-- **Base de données** : `DATABASE_URL` (ex. `postgresql://user:pass@localhost:5432/clara` si Postgres en local)
-- **MinIO** : `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` (ou laisser les valeurs pour Docker)
-- **Secrets** : `NEXTAUTH_SECRET`, `ARCHIBALD_API_KEY` et `API_KEY` (même valeur)
-- **Optionnel** : clés API LLM (OpenAI, Mistral, Google) pour le chat
 
-**Étape 3 — Démarrer PostgreSQL et MinIO (Docker)**  
-Si vous n’avez pas Postgres/MinIO en local, dans un terminal à la racine du projet :
+Open `.env` and fill in at minimum:
+
+### Minimum required
+
+- `DATABASE_URL`
+- `MINIO_ENDPOINT`
+- `MINIO_ACCESS_KEY`
+- `MINIO_SECRET_KEY`
+- `API_KEY`
+- `ARCHIBALD_API_URL`
+- `ARCHIBALD_API_KEY`
+
+### Optional (AI features)
+
+- `OPENAI_API_KEY`
+- `MISTRAL_API_KEY`
+- `ANTHROPIC_API_KEY`
+- `GEMINI_API_KEY`
+- `TAVILY_API_KEY`
+
+These are required only if you want to enable specific AI providers or features.
+
+- **Default user**: `CLARA_DEFAULT_EMAIL`, `CLARA_DEFAULT_PASSWORD`, `CLARA_DEFAULT_FIRST_NAME`, `CLARA_DEFAULT_LAST_NAME`
+- **Clara secret (recommended)**: `NEXTAUTH_SECRET`
+
+**Step 3 — Start PostgreSQL and MinIO (Docker)**  
+If you do not have Postgres/MinIO locally, run in a terminal at the project root:
+
 ```bash
 docker compose up -d postgres minio
 ```
-Attendre quelques secondes que Postgres soit prêt.
 
-**Étape 4 — Clara (Next.js)**
+Wait a few seconds until Postgres is ready.
+
+**Step 4 — Clara (Next.js)**
+
 ```bash
 cd clara-ai
 pnpm install
@@ -74,93 +178,121 @@ pnpm db:push
 node src/scripts/createClaraUser.js
 pnpm dev
 ```
-Clara tourne sur **http://localhost:3000**. Laisser ce terminal ouvert.
 
-**Étape 5 — Archibald (moteur IA)**  
-Dans un **nouveau terminal**, à la racine du projet :
+Clara runs on **http://localhost:3000**. Keep this terminal open.
+
+**Step 5 — Archibald (AI engine)**  
+In a **new terminal**, at the project root:
+
 ```bash
 cd Clara_ai
 uv sync
 uv run --directory archibald uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
-Archibald tourne sur **http://localhost:8000**. Dans `.env`, mettre `ARCHIBALD_API_URL=http://localhost:8000` et `ARCHIBALD_API_KEY` (même valeur que `API_KEY`).
 
-**Résumé** : Ouvrir http://localhost:3000, se connecter avec les identifiants du `.env`. Pour utiliser le chat, aller dans **Support → Providers / Models** et ajouter au moins un modèle.
+Archibald runs on **http://localhost:8000**. In `.env`, set `ARCHIBALD_API_URL=http://localhost:8000` and `ARCHIBALD_API_KEY` (same value as `API_KEY`).
+
+**Summary**: Open http://localhost:3000 and sign in with the credentials from `.env`. To use chat, go to **Support → Providers / Models** and add at least one model.
 
 ---
 
-## Mode production (étape par étape)
+## Production mode (step by step)
 
-Toute la stack tourne dans **Docker** (PostgreSQL, MinIO, Clara, Archibald). Une seule commande après configuration.
+The full stack runs in **Docker** (PostgreSQL, MinIO, Clara, Archibald). A single command after configuration.
 
-**Étape 1 — Installer Docker Desktop**  
-Télécharger et installer : [Docker Desktop](https://docs.docker.com/desktop/). L’ouvrir et attendre qu’il soit prêt.
+**Step 1 — Install Docker Desktop**  
+Download and install: [Docker Desktop](https://docs.docker.com/desktop/). Open it and wait until it is ready.
 
-**Étape 2 — Cloner le dépôt**
+**Step 2 — Clone the repository**
+
 ```bash
 git clone https://github.com/initd-fr/Clara_ai.git
 cd Clara_ai
 ```
 
-**Étape 3 — Fichier d’environnement**
+**Step 3 — Environment file**
+
 ```bash
 cp .env.exemple .env
 ```
-Éditer `.env` et renseigner :
-- **Utilisateur par défaut** : `CLARA_DEFAULT_EMAIL`, `CLARA_DEFAULT_PASSWORD`, `CLARA_DEFAULT_FIRST_NAME`, `CLARA_DEFAULT_LAST_NAME`
-- **Secrets** : `NEXTAUTH_SECRET`, `API_KEY`, `ARCHIBALD_API_KEY` (le script peut les générer automatiquement si vous lancez `./start.sh` ou `.\start.ps1` une première fois sans les remplir)
-- **Optionnel** : clés API LLM pour le chat. Les hostnames `postgres` et `minio` dans le `.env` sont déjà adaptés à Docker.
 
-**Étape 4 — Lancer la stack**
+Edit `.env` and fill in:
+
+- **Default user**: `CLARA_DEFAULT_EMAIL`, `CLARA_DEFAULT_PASSWORD`, `CLARA_DEFAULT_FIRST_NAME`, `CLARA_DEFAULT_LAST_NAME`
+- **Secrets**: `NEXTAUTH_SECRET`, `API_KEY`, `ARCHIBALD_API_KEY` (the script can generate them automatically if you run `./start.sh` or `.\start.ps1` once before filling them manually)
+
+### Minimum required
+
+- `DATABASE_URL`
+- `MINIO_ENDPOINT`
+- `MINIO_ACCESS_KEY`
+- `MINIO_SECRET_KEY`
+- `API_KEY`
+- `ARCHIBALD_API_URL`
+- `ARCHIBALD_API_KEY`
+
+### Optional (AI features)
+
+- `OPENAI_API_KEY`
+- `MISTRAL_API_KEY`
+- `ANTHROPIC_API_KEY`
+- `GEMINI_API_KEY`
+- `TAVILY_API_KEY`
+
+These are required only if you want to enable specific AI providers or features.
+
+The `postgres` and `minio` hostnames in `.env` are already configured for Docker.
+
+**Step 4 — Start the stack**
 
 - **Linux / macOS :** `./start.sh`
-- **Windows (PowerShell) :** `.\start.ps1`  
-- **Windows (invite de commandes ou double-clic) :** `start.bat`
+- **Windows (PowerShell) :** `.\start.ps1`
+- **Windows (Command Prompt or double-click):** `start.bat`
 
-Le script construit les images, démarre PostgreSQL, MinIO, Clara et Archibald, applique le schéma en base et crée l’utilisateur par défaut.
+The script builds images, starts PostgreSQL, MinIO, Clara, and Archibald, applies the database schema, and creates the default user.
 
-**Étape 5 — Utiliser l’application**  
-Ouvrir **http://localhost:3000** et se connecter avec les identifiants du `.env`.  
-Configurer le chat : **Support** → onglet **Providers** (activer) → onglet **Models** (ajouter des modèles). Références : [OpenAI](https://developers.openai.com/api/docs/models/all), [Mistral](https://docs.mistral.ai/getting-started/models), [Google Gemini](https://ai.google.dev/gemini-api/docs/models?hl=fr).
+**Step 5 — Use the application**  
+Open **http://localhost:3000** and sign in with the `.env` credentials.  
+Configure chat: **Support** → **Providers** tab (enable) → **Models** tab (add models). References: [OpenAI](https://developers.openai.com/api/docs/models/all), [Mistral](https://docs.mistral.ai/getting-started/models), [Google Gemini](https://ai.google.dev/gemini-api/docs/models?hl=fr).
 
-**Arrêter la stack :** `docker compose down`  
-**Voir les logs :** `docker compose logs -f`
+**Stop the stack:** `docker compose down`  
+**View logs:** `docker compose logs -f`
 
-**Recréer l’utilisateur par défaut :**  
+**Recreate the default user:**  
 `docker compose run --rm clara node src/scripts/createClaraUser.js`
 
-*Sous Windows sans WSL : utiliser `.\start.ps1` ou `start.bat` (équivalent de `start.sh`). Si vous lancez Docker à la main : `docker compose up -d --build`, puis `docker compose run --rm clara pnpm db:push`, puis `docker compose run --rm clara node src/scripts/createClaraUser.js`.*
+_On Windows without WSL: use `.\start.ps1` or `start.bat` (equivalent to `start.sh`). If you start Docker manually: `docker compose up -d --build`, then `docker compose run --rm clara pnpm db:push`, then `docker compose run --rm clara node src/scripts/createClaraUser.js`._
 
 ---
 
-## Vue d’ensemble technique
+## Technical overview
 
-| Composant      | Rôle                                                                                                                       |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Clara**      | SPA + API (Next.js 14, tRPC, Prisma, NextAuth, MinIO). Chat, auth, modèles personnels, support, cron. |
-| **Archibald**  | API REST (FastAPI) : routes chat par provider/mode, RAG, documents, recherche web. Authentification par `X-API-Key`.       |
-| **PostgreSQL** | Données Clara (Prisma), partagé avec Archibald pour le RAG. Extension **pgvector** requise pour les embeddings.            |
-| **MinIO**      | Stockage S3-compatible (fichiers uploadés, documents).                                                                     |
+| Component      | Role                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Clara**      | SPA + API (Next.js 14, tRPC, Prisma, NextAuth, MinIO). Chat, auth, custom models, support, cron.              |
+| **Archibald**  | REST API (FastAPI): chat routes by provider/mode, RAG, documents, web search. Authentication via `X-API-Key`. |
+| **PostgreSQL** | Clara data (Prisma), shared with Archibald for RAG. **pgvector** extension required for embeddings.           |
+| **MinIO**      | S3-compatible storage (uploaded files, documents).                                                            |
 
-Flux typique : l’utilisateur utilise l’UI Clara → requêtes tRPC → Prisma / MinIO ; le chat et le RAG sont envoyés à Archibald, qui lit/écrit en PostgreSQL et MinIO.
+Typical flow: the user interacts with the Clara UI → tRPC requests → Prisma / MinIO; chat and RAG requests are sent to Archibald, which reads/writes to PostgreSQL and MinIO.
 
-**En production (déploiement public)** : placer un reverse proxy (Nginx, Caddy, Traefik) devant Clara et Archibald, en HTTPS, et adapter `NEXTAUTH_URL` et `CORS_ORIGINS` dans `.env`.
-
----
-
-## Stack technique (résumé)
-
-| Domaine       | Clara (Next.js)                                       | Archibald (Python)                             |
-| ------------- | ----------------------------------------------------- | ---------------------------------------------- |
-| Framework     | Next.js 14, React 18, TypeScript                      | FastAPI, Python 3.12+                          |
-| API / données | tRPC, Prisma, PostgreSQL, SuperJSON                   | REST, SQLAlchemy/Prisma, PostgreSQL (pgvector) |
-| Auth          | NextAuth (Credentials + Google), JWT                  | X-API-Key                                      |
-| IA / RAG      | LangChain, embeddings, pgvector (délégué à Archibald) | LangChain, vectorstores, Tavily                |
-| Stockage      | MinIO (S3)                                            | MinIO                                          |
-| Qualité       | Zod, Vitest, Playwright                               | Pydantic, Ruff, mypy, pytest                   |
+**In production (public deployment):** place a reverse proxy (Nginx, Caddy, Traefik) in front of Clara and Archibald, enforce HTTPS, and adjust `NEXTAUTH_URL` and `CORS_ORIGINS` in `.env`.
 
 ---
 
-## Licence
+## Technical stack (summary)
 
-Ce projet est librement **consultable et utilisable** ; une **attribution** est requise. Pour un **usage commercial** ou la **distribution d’un produit basé sur ce code**, merci de **contacter l’auteur**. Voir [LICENSE](LICENSE).
+| Domain     | Clara (Next.js)                                          | Archibald (Python)                             |
+| ---------- | -------------------------------------------------------- | ---------------------------------------------- |
+| Framework  | Next.js 14, React 18, TypeScript                         | FastAPI, Python 3.9+ (3.12 recommended)        |
+| API / Data | tRPC, Prisma, PostgreSQL, SuperJSON                      | REST, SQLAlchemy/Prisma, PostgreSQL (pgvector) |
+| Auth       | NextAuth (Credentials-based authentication), JWT         | X-API-Key                                      |
+| AI / RAG   | LangChain, embeddings, pgvector (delegated to Archibald) | LangChain, vectorstores, Tavily                |
+| Storage    | MinIO (S3)                                               | MinIO                                          |
+| Quality    | Zod, Vitest, Playwright                                  | Pydantic, Ruff, mypy, pytest                   |
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
