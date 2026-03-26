@@ -1,0 +1,89 @@
+version = "0.2"
+
+# ---------------------------------------------------------
+#  COMMIT TYPES
+# ---------------------------------------------------------
+[types]
+WIP = "Work in progress — not ready for production"
+FEAT = "New feature"
+FIX = "Bug fix"
+REFACTOR = "Refactor without behavior change"
+PERF = "Performance improvement"
+DOCS = "Documentation only"
+STYLE = "Formatting / lint / minor cleanup"
+TEST = "Add or update tests"
+CONFIG = "Configuration / environment / dependencies"
+BUILD = "Build / packaging / CI"
+CLEAN = "Remove dead code or unused files"
+
+# ---------------------------------------------------------
+#  COMMIT SCOPES
+# ---------------------------------------------------------
+[scopes]
+accept = "list"
+
+list = [
+  # Frontend
+  "frontend",
+  "ui",
+  "trpc",
+
+  # Backend Python / IA
+  "backend",
+  "fastapi",
+  "rag",
+  "llm",
+  "providers",
+
+  # Data / storage
+  "db",
+  "pgvector",
+  "prisma",
+  "storage",
+
+  # Infra
+  "docker",
+  "infra",
+  "env",
+
+  # Features
+  "auth",
+  "chat",
+  "documents",
+  "search",
+
+  # Quality
+  "tests",
+  "lint",
+  "typing",
+
+  # Global
+  "core",
+  "config",
+  "docs"
+]
+
+# ---------------------------------------------------------
+#  TICKET CONFIG
+# ---------------------------------------------------------
+[ticket]
+required = false
+prefixes = ["#", "CLARA-"]
+
+# ---------------------------------------------------------
+#  COMMIT TEMPLATE
+# ---------------------------------------------------------
+[templates]
+commit = """
+{{ type }} {{ description }}{% if scope %} ({{ scope }}){% endif %}{% if ticket %} — {% if type == "WIP" %}Refs{% else %}Closes{% endif %} {{ ticket }}{% endif %}
+
+# Context:
+# Why is this change needed?
+
+# Changes:
+# - 
+
+# Notes (optional):
+# Technical details, limitations, follow-ups
+
+"""
