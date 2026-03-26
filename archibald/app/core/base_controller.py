@@ -753,7 +753,19 @@ class BaseChatController(ABC):
                 self.logger.info(f"URL detected: {url}")
                 try:
                     content = await read_url_content(url)
-                    result_content = content.get("content", "")
+                    # read_url_content retourne un objet SearchResult (attribut .content),
+                    # mais on garde un fallback dict pour compatibilité.
+                    if isinstance(content, dict):
+                        result_content = content.get("content", "")
+                    else:
+                        result_content = getattr(content, "content", "")
+
+                    # Validation minimale: éviter de cacher silencieusement une réponse vide.
+                    if not isinstance(result_content, str) or not result_content.strip():
+                        self.logger.warning(
+                            f"No usable content extracted from URL: {url}"
+                        )
+                        return ""
 
                     # Mettre en cache
                     cache_manager.set_web_search(question, {"content": result_content})
